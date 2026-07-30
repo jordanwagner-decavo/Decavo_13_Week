@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:#16202c; --ink-soft:#5a6675; --line:#d9e0e8; --line-soft:#eef2f6;
+      --surface:#ffffff; --panel:#f6f8fa; --alt:#edf1f6; --alt-head:#eef2f7;
+      --info-col:#f1eee8; --info-head:#ece7df;
+      --now:#dcebff; --now-cell:#e6f0fb; --now-head:#d2e6f9; --now-line:#2f7fd0;
+      --steel:#275d8c; --steel-deep:#1c486d; --amber:#c9781a; --amber-bg:#fdf3e6;
+      --green:#2e7d52; --red:#b4452f; --shadow:0 10px 30px rgba(22,32,44,.18); --radius:6px;
+      --w-so:74px; --w-pn:96px; --w-desc:263px; --w-up:96px;
+      --l-pn:74px; --l-desc:170px; --l-up:433px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; height:100%; background:var(--panel); color:var(--ink);
+      font-family:'IBM Plex Sans', system-ui, sans-serif; font-size:14px; -webkit-font-smoothing:antialiased; }
+    body { display:flex; flex-direction:column; }
+
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:14px 22px; background:var(--ink); color:#eef3f8; border-bottom:3px solid var(--steel); height:64px; flex:none; }
+    .brand { display:flex; align-items:center; gap:14px; min-width:0; }
+    .brand .mark { width:34px; height:34px; flex:none; border:2px solid var(--steel); border-radius:5px;
+      display:grid; place-items:center; font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:13px; letter-spacing:-.5px; color:#cfe0f0; }
+    .brand h1 { margin:0; font-size:16px; font-weight:700; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .brand .sub { margin:2px 0 0; font-size:11px; color:#7a9bb5; font-family:'IBM Plex Mono', monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .controls { display:flex; align-items:center; gap:8px; flex:none; }
+
+    .filter-wrap { position:relative; display:inline-flex; align-items:center; }
+    .filter { padding:7px 26px 7px 11px; font-size:13px; font-family:inherit; border:1px solid #3a5068;
+      border-radius:var(--radius); background:#1e2e3d; color:#cfe0f0; width:220px; outline:none; }
+    .filter::placeholder { color:#5a7a99; }
+    .filter:focus { border-color:var(--steel); background:#243a4e; }
+    .filter-clear { position:absolute; right:5px; top:50%; transform:translateY(-50%); border:none; background:transparent;
+      color:#7a9bb5; cursor:pointer; font-size:17px; line-height:1; padding:1px 5px; border-radius:4px; display:none; }
+    .filter-clear:hover { color:#cfe0f0; background:rgba(255,255,255,.1); }
+    .filter-clear.show { display:block; }
+
+    .btn { padding:7px 14px; font-size:13px; font-family:inherit; font-weight:600; border-radius:var(--radius);
+      border:none; cursor:pointer; transition:background .12s; white-space:nowrap; }
+    .btn-ghost { background:rgba(255,255,255,.08); color:#cfe0f0; }
+    .btn-ghost:hover { background:rgba(255,255,255,.15); }
+    .btn-ghost.on { background:var(--steel); color:#fff; }
+    .btn-ghost:disabled { opacity:.35; cursor:default; }
+    .btn-primary { background:var(--steel); color:#fff; display:inline-flex; align-items:center; gap:7px; }
+    .btn-primary:hover { background:var(--steel-deep); }
+    .btn-primary:disabled { background:#9bb2c8; cursor:default; }
+    .btn-plain { background:transparent; color:var(--ink-soft); border:1px solid var(--line); }
+    .btn-plain:hover { background:var(--panel); }
+    .pill { background:rgba(255,255,255,.22); color:#fff; font-size:11px; font-weight:700; padding:2px 7px;
+      border-radius:10px; min-width:22px; text-align:center; font-family:'IBM Plex Mono', monospace; }
+
+    .legend { display:flex; align-items:center; gap:18px; padding:8px 22px; background:var(--surface);
+      border-bottom:1px solid var(--line); font-size:12px; color:var(--ink-soft); flex:none; }
+    .legend .item { display:flex; align-items:center; gap:6px; }
+    .legend .swatch { width:14px; height:14px; border-radius:3px; border:1.5px solid; flex:none; }
+    .legend .note { margin-left:auto; font-style:italic; }
+
+    .scroll-host { position:relative; overflow:auto; flex:1; min-height:0; }
+    #grid { border-collapse:separate; border-spacing:0; font-size:13px; }
+    #grid th, #grid td { border-right:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); }
+    #grid thead th { background:var(--panel); border-bottom:2px solid var(--line); position:sticky; z-index:20;
+      font-size:11.5px; font-weight:600; text-align:center; color:var(--ink-soft); letter-spacing:.03em; white-space:nowrap; user-select:none; }
+    #grid thead tr.mb-row th { top:0; }
+    #grid thead tr#headRow th { top:28px; }
+    #grid thead th.wk-alt { background:var(--alt-head); }
+    #grid tbody td.wk-alt { background:var(--alt); }
+    #grid thead th.wk-now { background:var(--now-head); color:var(--steel-deep); box-shadow:inset 0 -3px 0 var(--now-line); }
+    #grid tbody td.wk-now { background:var(--now-cell); }
+    #grid th.wk-now, #grid td.wk-now { border-left:2px solid var(--now-line); border-right:2px solid var(--now-line); }
+    #grid tbody tr:hover td { background:#f0f5fa; }
+    #grid tbody tr:hover td.wk-alt { background:#e7eef6; }
+    #grid tbody tr:hover td.wk-now { background:#dcebfa; }
+    #grid tbody tr:hover td.sticky-l { background:#ebe5db; }
+
+    .sticky-l { position:sticky; z-index:10; background:var(--info-col); }
+    #grid thead th.sticky-l { z-index:30; background:var(--info-head); }
+    #grid .l3 { border-right:2px solid #c2ccd6; }
+    .l0 { left:0; } .l1 { left:var(--l-pn); } .l2 { left:var(--l-desc); } .l3 { left:var(--l-up); } .l4 { left:529px; }
+    .c-tot .cell-pad { text-align:center; }
+
+    .c-so { width:var(--w-so); min-width:var(--w-so); max-width:var(--w-so); }
+    .c-pn { width:var(--w-pn); min-width:var(--w-pn); max-width:var(--w-pn); }
+    .c-desc { width:var(--w-desc); min-width:var(--w-desc); max-width:var(--w-desc); }
+    .c-up { width:var(--w-up); min-width:var(--w-up); max-width:var(--w-up); }
+    .c-qty { width:64px; min-width:64px; }
+    #grid.show-values .c-qty { width:70px; min-width:70px; }
+    #grid.show-actuals .c-qty { width:74px; min-width:74px; }
+    #grid.show-actuals.show-values .c-qty { width:106px; min-width:106px; }
+
+    .cell-pad { padding:7px 10px; }
+    .id-so { font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); }
+    .id-pn { font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:500; }
+    .id-desc { font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:var(--w-desc); }
+    .id-up { font-family:'IBM Plex Mono', monospace; font-size:12px; text-align:right; color:var(--ink-soft); }
+    .c-qty .cell-pad { text-align:center; font-family:'IBM Plex Mono', monospace; font-size:13px; }
+
+    .cell-dual { display:flex; flex-direction:column; align-items:center; gap:1px; line-height:1.2; padding:5px 6px; }
+    .cell-dual .cq { font-weight:500; }
+    .cell-dual .cq.ok { color:var(--now-line); }
+    .cell-dual .cq.under { color:var(--red); }
+    .c-tot { width:96px; min-width:96px; background:var(--info-col); }
+    #grid thead th.c-tot { background:var(--info-head); }
+    #grid .c-tot { border-right:2px solid #c2ccd6; }
+    td.c-tot.warn .cell-dual .cq, td.c-tot.warn .cell-pad { color:var(--amber); }
+    td.c-tot.warn { background:var(--amber-bg); }
+    .miss { display:block; margin-top:2px; font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--amber); font-weight:600; }
+    td.locked { cursor:not-allowed; }
+    td.locked .cell-pad, td.locked .cell-dual { opacity:.82; }
+    #grid tbody td.behind { background:#fce4dd !important; box-shadow:inset 0 0 0 1px var(--red); }
+    #grid tbody tr:hover td.behind { background:#fad9d0 !important; }
+    td.behind .cell-dual .cq, td.behind .cell-pad { color:var(--red); }
+    .cell-dual .cv { font-size:11px; color:var(--ink-soft); }
+    .cell-dual .cv.ok { color:var(--now-line); }
+    .cell-dual .cv.under { color:var(--red); }
+    .sl { color:#b7c2cd; padding:0 1px; }
+    .wk-tot { display:block; margin-top:3px; font-family:'IBM Plex Mono', monospace; font-size:10.5px; font-weight:500; color:var(--steel); }
+    th.wk-now .wk-tot { color:var(--steel-deep); }
+
+    td.empty .cell-pad { color:#c2cdd8; }
+    td.pending { background:var(--amber-bg) !important; outline:2px solid var(--amber); outline-offset:-2px; }
+    td.saved { outline:2px solid var(--steel); outline-offset:-2px; }
+    td.editing { padding:0; }
+    td.editing input { width:100%; height:100%; min-height:36px; border:2px solid var(--steel); padding:6px 10px;
+      font-family:'IBM Plex Mono', monospace; font-size:13px; text-align:right; background:#eef5fd; outline:none; border-radius:0; }
+
+    .sortable { cursor:pointer; }
+    .sortable:hover { background:#e8edf3; }
+    .sort-ar { display:inline-block; margin-left:4px; font-size:9px; color:var(--steel); }
+    .wk-d { display:block; font-family:'IBM Plex Mono', monospace; font-size:11px; }
+    #grid thead th.mb { font-family:'IBM Plex Mono', monospace; font-size:10.5px; font-weight:600; letter-spacing:.04em;
+      color:var(--steel-deep); background:#e7edf3; border-bottom:1px solid var(--line); padding:5px 8px; white-space:nowrap; }
+    #grid thead th.mb { border-left:2px solid #b9c4cf; }
+    #grid thead th.mb .mb-lbl { font-weight:700; color:var(--ink); }
+    #grid thead th.mb .mb-val, #grid thead th.mb .mb-bud { font-weight:700; }
+    #grid thead th.mb.under .mb-val, #grid thead th.mb.under .mb-bud { color:var(--red); }
+    #grid thead th.mb.over .mb-val, #grid thead th.mb.over .mb-bud { color:var(--green); }
+    #grid tbody td.mb-edge, #grid thead th.mb-edge { border-left:2px solid #b9c4cf; }
+    #grid thead tr.mb-row th.sticky-l { background:#e0e6ec; }
+    .sortmenu { position:absolute; z-index:80; background:var(--surface); border:1px solid var(--line); border-radius:8px;
+      box-shadow:var(--shadow); padding:5px; display:none; min-width:168px; }
+    .sortmenu.open { display:block; }
+    .sortmenu button { display:block; width:100%; text-align:left; border:none; background:transparent; padding:7px 10px;
+      font-family:inherit; font-size:12.5px; color:var(--ink); border-radius:5px; cursor:pointer; }
+    .sortmenu button:hover { background:var(--panel); }
+    .sortmenu button.active { color:var(--steel); font-weight:600; }
+
+    .statusbar { display:flex; align-items:center; gap:20px; padding:6px 22px; background:var(--surface);
+      border-top:1px solid var(--line); font-size:12px; color:var(--ink-soft); font-family:'IBM Plex Mono', monospace; flex:none; }
+    .statusbar .pend { color:var(--amber); font-weight:600; }
+
+    .overlay { position:absolute; inset:0; background:rgba(246,248,250,.7); display:none; place-items:center; z-index:30; }
+    .spinner { width:32px; height:32px; border:3px solid var(--line); border-top-color:var(--steel); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .modal-veil { position:absolute; inset:0; background:rgba(22,32,44,.42); display:none; align-items:center; justify-content:center; z-index:60; }
+    .modal-veil.open { display:flex; }
+    .modal { width:640px; max-width:calc(100vw - 36px); background:var(--surface); border-radius:10px; box-shadow:var(--shadow); overflow:hidden; animation:pop .14s ease-out; }
+    .modal.narrow { width:400px; }
+    @keyframes pop { from { transform:translateY(6px) scale(.99); opacity:0; } }
+    .modal-head { padding:15px 20px; border-bottom:1px solid var(--line); }
+    .modal-head .tag { font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--steel); font-weight:600; }
+    .modal-head h2 { margin:3px 0 0; font-size:17px; font-weight:700; }
+    .modal-body { padding:16px 20px; }
+    .modal-body p.lead { margin:0; font-size:13.5px; color:var(--ink-soft); line-height:1.55; }
+
+    .applyall { display:flex; align-items:center; gap:10px; padding:0 0 14px; border-bottom:1px solid var(--line); margin-bottom:4px; }
+    .applyall label { font-size:12px; font-weight:600; white-space:nowrap; }
+    .applyall select { flex:1; padding:7px 9px; font-size:12.5px; }
+
+    .rv-list { max-height:50vh; overflow:auto; }
+    .rv-line { display:flex; gap:12px; align-items:flex-start; padding:13px 4px; border-bottom:1px solid var(--line-soft); border-radius:var(--radius); }
+    .rv-line:last-child { border-bottom:0; }
+    .rv-line.missing { background:#fdece7; box-shadow:inset 0 0 0 1px var(--red); }
+    .rv-info { flex:1; display:flex; gap:10px; align-items:flex-start; min-width:0; }
+    .rv-text { font-size:13px; line-height:1.4; }
+    .rv-text .muted { color:var(--ink-soft); font-family:'IBM Plex Mono', monospace; font-size:11.5px; }
+    .rv-text .muted b { color:var(--ink); font-weight:600; }
+    .rv-text .rv-id { display:block; }
+    .rv-detail { display:block; white-space:nowrap; font-size:10.5px; }
+    .tag-due { font-family:'IBM Plex Mono', monospace; font-size:9px; letter-spacing:.08em; font-weight:600; padding:2px 5px; border-radius:3px; background:#fdeede; color:var(--amber); margin-left:4px; }
+    .chip { font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:.1em; font-weight:600; padding:4px 7px; border-radius:4px; white-space:nowrap; flex:none; margin-top:1px; }
+    .chip.pushout, .chip.zero, .chip.decrease { background:#fbe9e4; color:var(--red); }
+    .chip.pullin, .chip.increase { background:#e3f3ea; color:var(--green); }
+    .chip.move { background:#e7ecf1; color:var(--steel); }
+    .rv-reason { width:196px; flex:none; }
+    .rv-reason select { width:100%; padding:7px 9px; font-size:12.5px; }
+    .rv-reason textarea { width:100%; margin-top:6px; min-height:46px; font-size:12.5px; display:none; resize:vertical; }
+    .rv-reason textarea.show { display:block; }
+
+    select, textarea { font-family:'IBM Plex Sans', sans-serif; border:1px solid var(--line); border-radius:var(--radius); color:var(--ink); background:var(--surface); }
+    select:focus, textarea:focus { outline:2px solid var(--steel); outline-offset:0; border-color:var(--steel); }
+    .err { color:var(--red); font-size:12px; margin-top:10px; min-height:14px; }
+
+    .modal-foot { padding:14px 20px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px; background:var(--panel); }
+    .modal-foot .count { font-size:12px; color:var(--ink-soft); font-family:'IBM Plex Mono', monospace; }
+    .modal-foot .acts { display:flex; gap:10px; }
+
+    .toast { position:absolute; bottom:38px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--ink); color:#fff;
+      padding:11px 18px; border-radius:8px; font-size:13px; box-shadow:var(--shadow); opacity:0; pointer-events:none;
+      transition:opacity .18s, transform .18s; z-index:70; max-width:80%; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .toast.ok { border-left:4px solid var(--green); }
+    .toast.bad { border-left:4px solid var(--red); }
+
+    @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">13W</div>
+      <div>
+        <h1>DECAVO 13-Week Plan</h1>
+        <p class="sub" id="ctxLine">loading schedule…</p>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="filter-wrap">
+        <input id="filter" class="filter" type="text" placeholder="Filter by SO, part, description…">
+        <button id="filterClear" class="filter-clear" type="button" aria-label="Clear filter">&times;</button>
+      </div>
+      <button id="valueToggle" class="btn btn-ghost" type="button">Show $</button>
+      <button id="sortMeasure" class="btn btn-ghost" type="button" title="What week-header clicks sort by">Sort: Qty</button>
+      <button id="reconcileToggle" class="btn btn-ghost" type="button" title="Flag weeks behind SO demand">Reconcile SO</button>
+      <button id="reloadBtn" class="btn btn-ghost">Reload</button>
+      <button id="discardBtn" class="btn btn-ghost" disabled>Discard</button>
+      <button id="commitBtn" class="btn btn-primary" disabled>Review &amp; commit<span class="pill" id="commitCount">0</span></button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="item"><span class="swatch" style="background:var(--amber-bg);border-color:var(--amber)"></span> Edited, not yet saved</div>
+    <div class="item"><span class="swatch" style="background:#fff;border-color:var(--steel)"></span> Saved this session</div>
+    <div class="item"><span class="swatch" style="background:var(--now-cell);border-color:var(--now-line)"></span> Current week</div>
+    <div class="note">Actuals show as actual / planned on current &amp; past weeks.</div>
+  </div>
+
+  <div class="scroll-host" id="scrollHost">
+    <table id="grid">
+      <thead><tr id="monthRow" class="mb-row"></tr><tr id="headRow"></tr></thead>
+      <tbody id="body"></tbody>
+    </table>
+    <div class="overlay" id="overlay"><div class="spinner"></div></div>
+  </div>
+
+  <div class="statusbar">
+    <span><b id="rowCount">—</b> order lines</span>
+    <span><b id="weekCount">—</b> weeks</span>
+    <span class="pend" id="pendState"></span>
+    <span style="margin-left:auto" id="saveState">Ready</span>
+  </div>
+
+  <div class="modal-veil" id="veil">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head"><div class="tag">Change order</div><h2 id="modalTitle">Review &amp; commit changes</h2></div>
+      <div class="modal-body">
+        <div class="applyall"><label for="applyAll">Apply one reason to all:</label><select id="applyAll"></select></div>
+        <div class="rv-list" id="reviewList"></div>
+        <div class="err" id="reviewErr"></div>
+      </div>
+      <div class="modal-foot">
+        <span class="count" id="reviewCount"></span>
+        <div class="acts">
+          <button class="btn btn-plain" id="cancelBtn">Keep editing</button>
+          <button class="btn btn-primary" id="saveAllBtn">Save all changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-veil" id="confirmVeil">
+    <div class="modal narrow" role="dialog" aria-modal="true">
+      <div class="modal-head"><div class="tag">Heads up</div><h2 id="confirmTitle">Discard unsaved changes?</h2></div>
+      <div class="modal-body"><p class="lead" id="confirmMsg"></p></div>
+      <div class="modal-foot"><div class="acts">
+        <button class="btn btn-plain" id="confirmCancel">Keep editing</button>
+        <button class="btn btn-primary" id="confirmOk">Discard &amp; reload</button>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="sortmenu" id="sortMenu">
+    <button data-skey="total">Total Qty</button>
+    <button data-skey="totalVal">Total $</button>
+    <button data-skey="pastQty">Past-due Qty</button>
+    <button data-skey="pastVal">Past-due $</button>
+  </div>
+
+<script>
+  var DATA = null;
+  var pending = new Map();
+  var savedKeys = new Set();
+  var commitGroups = [];
+  var pendingConfirm = null;
+  var sortState = { key:null, dir:'asc' };
+  var showValues = false;
+  var showActuals = true;
+  var sortMeasure = 'qty';   // 'qty' or 'val' — what a week-header click sorts by
+  var showReconcile = false;
+  var CWI = -1;
+  var OTHER = '__other__';
+
+  function boot() {
+    showOverlay(true);
+    google.script.run.withSuccessHandler(onData).withFailureHandler(onErr).getScheduleData();
+  }
+  function onData(d) {
+    try {
+      DATA = d; CWI = (d.currentWeekIndex == null ? -1 : d.currentWeekIndex);
+      DATA.rows.forEach(function (r) {
+        r.gospel = r.qtys.reduce(function (a, q) { return a + (q === '' ? 0 : Number(q)); }, 0);
+      });
+      pending.clear(); savedKeys.clear();
+      sortState = { key:null, dir:'asc' };
+      document.getElementById('ctxLine').textContent =
+        d.sheetName + '  ·  ' + (d.weeks[0] || '—') + ' → ' + (d.weeks[d.weeks.length - 1] || '—');
+      document.getElementById('rowCount').textContent = d.rows.length;
+      document.getElementById('weekCount').textContent = d.weeks.length;
+      buildPresetSelects(d.presets);
+      renderGrid();
+      updateHeaderTotals();
+      updateMonthBand();
+      scrollToCurrentWeek();
+      updateCommitUI();
+    } catch (err) {
+      console.error('onData failed:', err);
+      toast('Render error: ' + (err && err.message ? err.message : err), false);
+    } finally {
+      showOverlay(false);
+    }
+  }
+  function onErr(e) {
+    showOverlay(false);
+    toast((e && e.message) ? e.message : 'Could not load the schedule. Try Reload.', false);
+  }
+
+  function isActualWeek(wi) { return showActuals && CWI >= 0 && wi <= CWI; }
+
+  // ── Render grid ───────────────────────────────────────────────────────
+  function renderGrid() {
+    var head = document.getElementById('headRow');
+    head.innerHTML =
+      '<th class="c-so sticky-l l0 sortable" data-sort="so">SO<span class="sort-ar"></span></th>' +
+      '<th class="c-pn sticky-l l1 sortable" data-sort="partNo">Part No.<span class="sort-ar"></span></th>' +
+      '<th class="c-desc sticky-l l2 sortable" data-sort="description" style="text-align:left">Description<span class="sort-ar"></span></th>' +
+      '<th class="c-up sticky-l l3 sortable" data-sort="unitPrice">Unit Price<span class="sort-ar"></span></th>' +
+      '<th class="c-tot sticky-l l4 sortable" data-sort="total">SO TOTALS<span class="sort-ar"></span></th>';
+    DATA.weeks.forEach(function (wk, wi) {
+      var monthStart = (wi > 0 && DATA.weekMonths && DATA.weekMonths[wi] !== DATA.weekMonths[wi - 1]);
+      var cls = 'c-qty sortable' + (wi % 2 === 1 ? ' wk-alt' : '') + (wi === CWI ? ' wk-now' : '') + (monthStart ? ' mb-edge' : '');
+      head.insertAdjacentHTML('beforeend',
+        '<th class="' + cls + '" data-sort="wk:' + wi + '">' +
+          '<span class="wk-d">' + esc(fmtDate(wk)) + '</span>' +
+          '<span class="wk-tot" id="tot-' + wi + '"></span>' +
+          '<span class="sort-ar"></span>' +
+        '</th>');
+    });
+    head.querySelectorAll('[data-sort]').forEach(function (th) {
+      th.addEventListener('click', function (ev) {
+        if (th.getAttribute('data-sort') === 'total') { openSortMenu(th, ev); return; }
+        onSort(th.getAttribute('data-sort'));
+      });
+    });
+    buildMonthBand();
+
+    var body = document.getElementById('body');
+    body.innerHTML = '';
+    DATA.rows.forEach(function (r, ri) {
+      var tr = document.createElement('tr');
+      tr.dataset.ri = ri;
+      tr.dataset.search = (r.so + ' ' + r.partNo + ' ' + r.description).toLowerCase();
+      tr.innerHTML =
+        '<td class="c-so sticky-l l0"><div class="cell-pad id-so">' + esc(r.so) + '</div></td>' +
+        '<td class="c-pn sticky-l l1"><div class="cell-pad id-pn">' + esc(r.partNo) + '</div></td>' +
+        '<td class="c-desc sticky-l l2"><div class="cell-pad id-desc" title="' + esc(r.description) + '">' + esc(r.description) + '</div></td>' +
+        '<td class="c-up sticky-l l3"><div class="cell-pad id-up">' + money(r.unitPrice) + '</div></td>' +
+        '<td class="c-tot sticky-l l4" data-ri="' + ri + '"><div class="cell-pad"></div></td>';
+      DATA.weeks.forEach(function (wk, wi) {
+        var td = document.createElement('td');
+        var monthStart = (wi > 0 && DATA.weekMonths && DATA.weekMonths[wi] !== DATA.weekMonths[wi - 1]);
+        td.className = 'c-qty qty' + (wi % 2 === 1 ? ' wk-alt' : '') + (wi === CWI ? ' wk-now' : '') + (wi < CWI ? ' locked' : '') + (monthStart ? ' mb-edge' : '');
+        td.dataset.ri = ri; td.dataset.wi = wi;
+        renderCell(td, ri, wi);
+        if (wi >= CWI) td.addEventListener('click', function () { startEdit(this); });
+        tr.appendChild(td);
+      });
+      renderTotal(tr.querySelector('.c-tot'), ri);
+      body.appendChild(tr);
+    });
+    document.getElementById('grid').classList.toggle('show-values', showValues);
+    document.getElementById('grid').classList.toggle('show-actuals', showActuals && CWI >= 0);
+    renderSortArrows();
+  }
+
+  function frac(a, b) { return a + '<span class="sl">/</span>' + b; }
+
+  function renderCell(td, ri, wi) {
+    var k = ri + ':' + wi;
+    td.classList.remove('pending', 'saved', 'empty');
+    var q;
+    if (pending.has(k)) { td.classList.add('pending'); q = pending.get(k).newQty; }
+    else {
+      q = DATA.rows[ri].qtys[wi];
+      if (q === '') td.classList.add('empty');
+      if (savedKeys.has(k)) td.classList.add('saved');
+    }
+    var price = DATA.rows[ri].unitPrice || 0;
+    var pQty  = (q === '' ? 0 : Number(q));
+    var qDisp = (q === '' ? '·' : esc(String(q)));
+    var act   = isActualWeek(wi) && !pending.has(k);  // pending edits show the new plan, not actuals
+    var aQty  = (DATA.rows[ri].actualQtys || [])[wi] || 0;
+    var aVal  = (DATA.rows[ri].actualVals || [])[wi] || 0;
+
+    var qtyHtml = act ? frac(String(aQty), (q === '' ? '0' : String(pQty))) : qDisp;
+    var pVal = pQty * price;
+    var valHtml;
+    if (act) valHtml = (aVal === 0 && pVal === 0) ? '' : frac(valueK(aVal), valueK(pVal));
+    else     valHtml = (pVal === 0) ? '' : valueK(pVal);
+    var past = act && wi < CWI;
+    var cqCls = past ? (aQty >= pQty ? ' ok' : ' under') : '';
+
+    // Current/past weeks with nothing planned and nothing shipped read as blank.
+    if (act && aQty === 0 && pQty === 0) {
+      td.classList.add('empty');
+      td.innerHTML = '<div class="cell-pad">·</div>';
+      return;
+    }
+
+    if (showValues || act) {
+      var lines = '<span class="cq' + cqCls + '">' + qtyHtml + '</span>';
+      if (showValues && valHtml) lines += '<span class="cv' + cqCls + '">' + valHtml + '</span>';
+      td.innerHTML = '<div class="cell-pad cell-dual">' + lines + '</div>';
+    } else {
+      td.innerHTML = '<div class="cell-pad">' + qDisp + '</div>';
+    }
+  }
+  function reRenderAll() {
+    document.getElementById('grid').classList.toggle('show-values', showValues);
+    document.getElementById('grid').classList.toggle('show-actuals', showActuals && CWI >= 0);
+    document.querySelectorAll('#body td.qty').forEach(function (td) { renderCell(td, +td.dataset.ri, +td.dataset.wi); });
+    document.querySelectorAll('#body td.c-tot').forEach(function (td) { renderTotal(td, +td.dataset.ri); });
+    if (showReconcile) applyReconcile();
+  }
+
+  // Effective planned qty for a cell (pending edit wins).
+  function effQty(ri, wi) {
+    var k = ri + ':' + wi;
+    if (pending.has(k)) return pending.get(k).newQty;
+    var q = DATA.rows[ri].qtys[wi];
+    return q === '' ? 0 : Number(q);
+  }
+  // Open miss for a row: sum over locked past weeks of max(plan - actual, 0).
+  function rowMiss(ri) {
+    if (CWI < 0) return 0;
+    var miss = 0;
+    for (var wi = 0; wi < CWI; wi++) {
+      var plan = DATA.rows[ri].qtys[wi]; plan = (plan === '' ? 0 : Number(plan));
+      var act  = (DATA.rows[ri].actualQtys || [])[wi] || 0;
+      if (act < plan) miss += (plan - act);
+    }
+    return miss;
+  }
+  // Total delivery qty = shipped actuals (past) + planned (current & future).
+  // Gospel total comes from the sheet at load and never changes.
+  function rowTotal(ri) {
+    var g = DATA.rows[ri].gospel || 0;
+    return { qty: g, val: g * (DATA.rows[ri].unitPrice || 0) };
+  }
+  // Sum accounted for: shipped actuals (past) + planned (current + future).
+  function effectiveSum(ri) {
+    var q = 0;
+    DATA.weeks.forEach(function (wk, wi) {
+      if (CWI >= 0 && wi < CWI) q += (DATA.rows[ri].actualQtys || [])[wi] || 0;
+      else q += effQty(ri, wi);
+    });
+    return q;
+  }
+  function renderTotal(td, ri) {
+    var t = rowTotal(ri);
+    var diff = t.qty - effectiveSum(ri);   // >0 short → push; <0 over → excess
+    td.classList.toggle('warn', diff !== 0);
+    var note = diff > 0 ? ('⚠ ' + diff + ' to push') : (diff < 0 ? ('⚠ ' + Math.abs(diff) + ' in excess') : '');
+    var qd = String(t.qty);
+    if (showValues) {
+      td.innerHTML = '<div class="cell-pad cell-dual"><span class="cq">' + qd + '</span><span class="cv">' + valueK(t.val) + '</span>' +
+        (note ? '<span class="miss">' + note + '</span>' : '') + '</div>';
+    } else {
+      td.innerHTML = '<div class="cell-pad"><span>' + qd + '</span>' + (note ? '<span class="miss">' + note + '</span>' : '') + '</div>';
+    }
+  }
+  // How much of this row's pending future bumps counts as miss recovery.
+  function recoveredForRow(ri) {
+    var bump = 0;
+    pending.forEach(function (e) {
+      if (e.ri === ri && e.wi >= CWI) { var d = e.newQty - e.oldQty; if (d > 0) bump += d; }
+    });
+    return bump;
+  }
+  // Per-week shortfalls for a row (locked past weeks), oldest first.
+  function missWeeks(ri) {
+    var out = [];
+    if (CWI < 0) return out;
+    for (var wi = 0; wi < CWI; wi++) {
+      var plan = DATA.rows[ri].qtys[wi]; plan = (plan === '' ? 0 : Number(plan));
+      var act  = (DATA.rows[ri].actualQtys || [])[wi] || 0;
+      if (act < plan) out.push({ wi: wi, weekDate: DATA.weeks[wi], qty: plan - act });
+    }
+    return out;
+  }
+
+  // Weeks where cumulative SO demand-due exceeds cumulative supply (behind).
+  // Supply = actuals(past) + planned/pending(current+future). Demand from P&P
+  // Open Qty, bucketed by due date into the first week ending on/after the due date.
+  function behindWeeks(ri) {
+    var flags = {};
+    var dem = DATA.rows[ri].demand || [];
+    if (!dem.length || !DATA.weeks.length) return flags;
+    var nW = DATA.weeks.length;
+    var weekEnd = DATA.weeks.map(function (d) { return new Date(d).getTime(); });
+    // demand due in each week bucket
+    var demByWeek = new Array(nW).fill(0);
+    dem.forEach(function (d) {
+      var t = new Date(d.due).getTime();
+      var wi = 0;
+      while (wi < nW && weekEnd[wi] < t) wi++;
+      if (wi >= nW) wi = nW - 1;     // due beyond horizon → last week
+      demByWeek[wi] += d.qty;
+    });
+    var cumDem = 0, cumSup = 0;
+    for (var wi = 0; wi < nW; wi++) {
+      cumDem += demByWeek[wi];
+      if (CWI >= 0 && wi < CWI) cumSup += (DATA.rows[ri].actualQtys || [])[wi] || 0;
+      else cumSup += effQty(ri, wi);
+      if (cumDem > cumSup) flags[wi] = true;
+    }
+    return flags;
+  }
+  function applyReconcile() {
+    document.querySelectorAll('#body td.qty.behind').forEach(function (td) { td.classList.remove('behind'); });
+    if (!showReconcile) return;
+    DATA.rows.forEach(function (r, ri) {
+      var flags = behindWeeks(ri);
+      Object.keys(flags).forEach(function (wi) {
+        var td = cellAt(ri, +wi);
+        if (td) td.classList.add('behind');
+      });
+    });
+  }
+
+  function updateHeaderTotals() {
+    DATA.weeks.forEach(function (wk, wi) {
+      var el = document.getElementById('tot-' + wi);
+      if (!el) return;
+      var pT = 0, aT = 0;
+      DATA.rows.forEach(function (r) {
+        var q = r.qtys[wi];
+        pT += (q === '' ? 0 : Number(q)) * (r.unitPrice || 0);
+        aT += (r.actualVals || [])[wi] || 0;
+      });
+      el.innerHTML = isActualWeek(wi) ? frac(valueK(aT), valueK(pT)) : valueK(pT);
+    });
+  }
+
+  // ── Month band ────────────────────────────────────────────────────────
+  var monthGroups = [];
+  function monthLabel(key) {
+    var parts = String(key).split('-');
+    var idx = Number(parts[1]) - 1;
+    var names = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+    return (names[idx] || key);
+  }
+  function buildMonthBand() {
+    var row = document.getElementById('monthRow');
+    if (!row) return;
+    var months = DATA.weekMonths || [];
+    monthGroups = [];
+    for (var i = 0; i < months.length; i++) {
+      var g = monthGroups[monthGroups.length - 1];
+      if (g && g.key === months[i]) g.last = i;
+      else monthGroups.push({ key: months[i], label: monthLabel(months[i]), first: i, last: i });
+    }
+    var html = '<th class="sticky-l l0" colspan="5"></th>';
+    monthGroups.forEach(function (m, gi) {
+      html += '<th class="mb" id="mb-' + gi + '" colspan="' + (m.last - m.first + 1) + '"></th>';
+    });
+    row.innerHTML = html;
+  }
+  function updateMonthBand() {
+    if (!monthGroups.length) return;
+    monthGroups.forEach(function (m, gi) {
+      var el = document.getElementById('mb-' + gi);
+      if (!el) return;
+      var x = 0;
+      document.querySelectorAll('#body tr').forEach(function (tr) {
+        if (tr.style.display === 'none') return;
+        var ri = +tr.dataset.ri, price = DATA.rows[ri].unitPrice || 0;
+        for (var wi = m.first; wi <= m.last; wi++) {
+          if (CWI >= 0 && wi < CWI) x += (DATA.rows[ri].actualVals || [])[wi] || 0;
+          else x += effQty(ri, wi) * price;
+        }
+      });
+      var bud = (DATA.budgets || {})[m.key] || 0;
+      el.classList.remove('under', 'over');
+      if (bud > 0) el.classList.add(x >= bud ? 'over' : 'under');
+      el.innerHTML = '<span class="mb-lbl">' + m.label + ' &mdash; </span>' +
+        '<span class="mb-val">' + valueK(x) + '</span><span class="mb-bud">/' + valueK(bud) + '</span>';
+    });
+  }
+
+  function scrollToCurrentWeek() {
+    if (CWI < 0) return;
+    var startIdx = Math.max(0, CWI - 1);
+    var host = document.getElementById('scrollHost');
+    var th   = document.querySelector('#headRow [data-sort="wk:' + startIdx + '"]');
+    var froz = document.querySelector('#headRow .c-tot');
+    if (!th || !host) return;
+    var frozenRight = froz ? (froz.offsetLeft + froz.offsetWidth) : 625;
+    host.scrollLeft = Math.max(0, th.offsetLeft - frozenRight);
+  }
+
+  // ── Sorting ───────────────────────────────────────────────────────────
+  function onSort(key) {
+    if (sortState.key === key) sortState.dir = (sortState.dir === 'asc') ? 'desc' : 'asc';
+    else {
+      sortState.key = key;
+      // Numeric measures default to descending (high first); text defaults ascending.
+      var numeric = (key.indexOf('wk:') === 0) ||
+        ['unitPrice', 'total', 'totalVal', 'pastQty', 'pastVal'].indexOf(key) >= 0;
+      sortState.dir = numeric ? 'desc' : 'asc';
+    }
+    applySort(); renderSortArrows();
+  }
+  function sortVal(ri, key) {
+    var r = DATA.rows[ri];
+    if (key === 'so') return r.so;
+    if (key === 'partNo') return r.partNo;
+    if (key === 'description') return r.description;
+    if (key === 'unitPrice') return r.unitPrice;
+    if (key === 'total') return rowTotal(ri).qty;
+    if (key === 'totalVal') return rowTotal(ri).val;
+    if (key === 'pastQty') return rowMiss(ri);
+    if (key === 'pastVal') return rowMiss(ri) * (r.unitPrice || 0);
+    if (key.indexOf('wk:') === 0) {
+      var wi = +key.slice(3);
+      if (sortMeasure === 'val') {
+        if (CWI >= 0 && wi < CWI) return (r.actualVals || [])[wi] || 0;
+        return effQty(ri, wi) * (r.unitPrice || 0);
+      }
+      var q = r.qtys[wi]; return q === '' ? 0 : Number(q);
+    }
+    return '';
+  }
+  function applySort() {
+    if (!sortState.key) return;
+    var body = document.getElementById('body');
+    var trs = Array.prototype.slice.call(body.querySelectorAll('tr'));
+    trs.sort(function (a, b) {
+      var va = sortVal(+a.dataset.ri, sortState.key), vb = sortVal(+b.dataset.ri, sortState.key);
+      var r = String(va).localeCompare(String(vb), undefined, { numeric:true, sensitivity:'base' });
+      return sortState.dir === 'asc' ? r : -r;
+    });
+    trs.forEach(function (tr) { body.appendChild(tr); });
+  }
+  function renderSortArrows() {
+    document.querySelectorAll('#headRow .sort-ar').forEach(function (s) { s.textContent = ''; });
+    if (!sortState.key) return;
+    var arrow = sortState.dir === 'asc' ? '▲' : '▼';
+    var rollups = ['total', 'totalVal', 'pastQty', 'pastVal'];
+    var sel = (rollups.indexOf(sortState.key) >= 0)
+      ? '#headRow [data-sort="total"] .sort-ar'
+      : '#headRow [data-sort="' + sortState.key + '"] .sort-ar';
+    var th = document.querySelector(sel);
+    if (th) th.textContent = arrow;
+  }
+
+  // ── Inline edit ───────────────────────────────────────────────────────
+  function cellAt(ri, wi) { return document.querySelector('#body td.qty[data-ri="' + ri + '"][data-wi="' + wi + '"]'); }
+
+  function startEdit(td) {
+    if (!td || td.classList.contains('editing')) return;
+    var ri = +td.dataset.ri, wi = +td.dataset.wi, k = ri + ':' + wi;
+    if (wi < CWI) return;  // past weeks locked
+    var shown = pending.has(k) ? pending.get(k).newQty : (DATA.rows[ri].qtys[wi] === '' ? '' : DATA.rows[ri].qtys[wi]);
+    td.classList.add('editing');
+    var input = document.createElement('input');
+    input.type = 'text'; input.value = (shown === '' ? '' : shown);
+    td.innerHTML = ''; td.appendChild(input); input.focus(); input.select();
+
+    var done = false;
+    function finish(commit) {
+      if (done) return; done = true;
+      td.classList.remove('editing');
+      var raw = input.value.trim();
+      if (!commit) { renderCell(td, ri, wi); return; }
+      if (raw !== '' && isNaN(Number(raw))) { renderCell(td, ri, wi); toast('Quantity must be a number.', false); return; }
+      var val = raw === '' ? 0 : Number(raw);
+      var baseline = DATA.rows[ri].qtys[wi];
+      var baseNum = baseline === '' ? 0 : Number(baseline);
+      var r = DATA.rows[ri];
+      if (val === baseNum) { pending.delete(k); }
+      else {
+        pending.set(k, { ri:ri, wi:wi, rowNum:r.rowNum, col:DATA.weekCols[wi], weekDate:DATA.weeks[wi],
+          oldQty:baseNum, newQty:val, unitPrice:r.unitPrice, partNo:r.partNo, so:r.so });
+      }
+      renderCell(td, ri, wi);
+      var totTd = document.querySelector('#body td.c-tot[data-ri="' + ri + '"]');
+      if (totTd) renderTotal(totTd, ri);
+      updateHeaderTotals();
+      updateMonthBand();
+      if (showReconcile) applyReconcile();
+      updateCommitUI();
+    }
+    function go(dr, dc) {
+      finish(true);
+      var nri = ri + dr, nwi = wi + dc;
+      if (nri < 0 || nri >= DATA.rows.length) return;
+      if (nwi < CWI || nwi >= DATA.weeks.length) return;
+      var ntd = cellAt(nri, nwi);
+      if (ntd) startEdit(ntd);
+    }
+    input.addEventListener('blur', function () { finish(true); });
+    input.addEventListener('keydown', function (e) {
+      switch (e.key) {
+        case 'Enter':      e.preventDefault(); go(1, 0); break;
+        case 'Tab':        e.preventDefault(); go(0, e.shiftKey ? -1 : 1); break;
+        case 'ArrowDown':  e.preventDefault(); go(1, 0); break;
+        case 'ArrowUp':    e.preventDefault(); go(-1, 0); break;
+        case 'ArrowRight': e.preventDefault(); go(0, 1); break;
+        case 'ArrowLeft':  e.preventDefault(); go(0, -1); break;
+        case 'Escape':     e.preventDefault(); finish(false); break;
+      }
+    });
+  }
+
+  // ── Commit UI ───────────────────────────────────────────────────────────
+  function updateCommitUI() {
+    var n = pending.size;
+    document.getElementById('commitCount').textContent = n;
+    document.getElementById('commitBtn').disabled = n === 0;
+    document.getElementById('discardBtn').disabled = n === 0;
+    document.getElementById('pendState').textContent = n ? (n + ' unsaved') : '';
+  }
+  function discardAll() {
+    if (!pending.size) return;
+    pending.clear(); reRenderAll(); updateHeaderTotals(); updateMonthBand(); updateCommitUI();
+  }
+
+  // ── Group pending edits ───────────────────────────────────────────────
+  function dt(e) { return new Date(e.weekDate).getTime(); }
+  function wavg(arr, isLoss) {
+    var num = 0, den = 0;
+    arr.forEach(function (e) { var w = isLoss ? (e.oldQty - e.newQty) : (e.newQty - e.oldQty); num += dt(e) * w; den += w; });
+    return den ? num / den : 0;
+  }
+  function moveGroup(sources, dests, ownedLosses) {
+    var qty = dests.reduce(function (a, e) { return a + (e.newQty - e.oldQty); }, 0);
+    var dir = wavg(dests, false) > wavg(sources, true) ? 'PUSH-OUT'
+            : (wavg(dests, false) < wavg(sources, true) ? 'PULL-IN' : 'MOVE');
+    return { kind:'move', sources:sources, dests:dests, qty:qty, dir:dir,
+             partNo:dests[0].partNo, so:dests[0].so, commitCells:ownedLosses.concat(dests) };
+  }
+  function plainSingle(e) {
+    var d = e.newQty - e.oldQty;
+    return { kind:'single', synthetic:false, edit:e,
+             type:e.newQty === 0 ? 'ZERO' : (d > 0 ? 'INCREASE' : 'DECREASE'),
+             partNo:e.partNo, so:e.so, commitCells:[e] };
+  }
+  function buildGroups() {
+    var groups = [];
+    var byRow = {};
+    pending.forEach(function (e) { (byRow[e.ri] = byRow[e.ri] || []).push(e); });
+    Object.keys(byRow).forEach(function (ri) {
+      var list = byRow[ri];
+      var gains = [], losses = [];
+      list.forEach(function (e) { var d = e.newQty - e.oldQty; if (d > 0) gains.push(e); else if (d < 0) losses.push(e); });
+      var usedG = {}, usedL = {};
+      losses.forEach(function (loss, li) {
+        if (usedL[li]) return;
+        var mag = loss.oldQty - loss.newQty;
+        for (var j = 0; j < gains.length; j++) {
+          if (!usedG[j] && (gains[j].newQty - gains[j].oldQty) === mag) {
+            usedG[j] = true; usedL[li] = true; groups.push(moveGroup([loss], [gains[j]], [loss])); break;
+          }
+        }
+      });
+      var remL = losses.filter(function (_, i) { return !usedL[i]; });
+      var remG = gains.filter(function (_, j) { return !usedG[j]; });
+      var sumL = remL.reduce(function (a, e) { return a + (e.oldQty - e.newQty); }, 0);
+      var sumG = remG.reduce(function (a, e) { return a + (e.newQty - e.oldQty); }, 0);
+      if (remL.length && remG.length && sumL >= sumG) {
+        var ref = wavg(remL, true);
+        var push = remG.filter(function (e) { return dt(e) >= ref; });
+        var pull = remG.filter(function (e) { return dt(e) < ref; });
+        var remainder = sumL - sumG;
+        var lossAssigned = false;
+        if (push.length) { var ownP = (remainder === 0 && !lossAssigned) ? remL : []; if (ownP.length) lossAssigned = true; groups.push(moveGroup(remL, push, ownP)); }
+        if (pull.length) { var ownPl = (remainder === 0 && !lossAssigned) ? remL : []; if (ownPl.length) lossAssigned = true; groups.push(moveGroup(remL, pull, ownPl)); }
+        if (remainder > 0) groups.push({ kind:'single', synthetic:true, type:'DECREASE', qty:remainder, sources:remL, partNo:remL[0].partNo, so:remL[0].so, commitCells:remL });
+      } else {
+        remL.forEach(function (e) { groups.push(plainSingle(e)); });
+        // Unpaired future GAINS: if this row has an open past miss, treat the
+        // bump as a recovery PUSH-OUT (missed) from the missed week instead of
+        // a plain INCREASE. Draw down the oldest miss first.
+        var missPool = missWeeks(ri);
+        remG.forEach(function (e) {
+          var gain = e.newQty - e.oldQty;
+          while (gain > 0 && missPool.length) {
+            var m = missPool[0];
+            var take = Math.min(gain, m.qty);
+            // synthesize a source edit representing the missed week
+            var srcEdit = { rowNum:e.rowNum, col:null, weekDate:m.weekDate,
+                            oldQty:0, newQty:0, unitPrice:e.unitPrice, partNo:e.partNo, so:e.so };
+            var destEdit = { rowNum:e.rowNum, col:e.col, weekDate:e.weekDate,
+                             oldQty:e.oldQty, newQty:e.oldQty + take, unitPrice:e.unitPrice, partNo:e.partNo, so:e.so };
+            groups.push({ kind:'move', dir:'PUSH-OUT', sources:[srcEdit], dests:[destEdit],
+                          qty:take, partNo:e.partNo, so:e.so, pastDue:true, note:'recovery plan (past-due)',
+                          commitCells:[e] });
+            m.qty -= take; gain -= take;
+            if (m.qty <= 0) missPool.shift();
+          }
+          if (gain > 0) {
+            // remaining bump beyond the miss is a normal increase
+            var inc = { rowNum:e.rowNum, col:e.col, weekDate:e.weekDate,
+                        oldQty:e.newQty - gain, newQty:e.newQty, unitPrice:e.unitPrice, partNo:e.partNo, so:e.so };
+            groups.push(plainSingle(inc));
+          }
+        });
+      }
+    });
+    return groups;
+  }
+
+  function fmtDate(str) {
+    var d = new Date(str);
+    if (isNaN(d.getTime())) return str;
+    var m = d.getMonth() + 1, dd = d.getDate(), yy = String(d.getFullYear()).slice(2);
+    return (m < 10 ? '0' + m : m) + '/' + (dd < 10 ? '0' + dd : dd) + '/' + yy;
+  }
+  function wkDelta(fromStr, toStr) {
+    var wks = Math.round((new Date(toStr) - new Date(fromStr)) / (7 * 24 * 60 * 60 * 1000));
+    return (wks >= 0 ? '+' : '') + wks + ' wk';
+  }
+
+  // ── Review modal ──────────────────────────────────────────────────────
+  function openReview() {
+    if (!pending.size) return;
+    commitGroups = buildGroups();
+    var list = document.getElementById('reviewList');
+    list.innerHTML = '';
+    commitGroups.forEach(function (g, i) {
+      var info;
+      if (g.kind === 'move') {
+        var cls = g.dir.toLowerCase().replace('-', '');
+        var detail;
+        if (g.sources.length === 1 && g.dests.length === 1) {
+          var f = g.sources[0].weekDate, t = g.dests[0].weekDate;
+          detail = '<b>' + wkDelta(f, t) + '</b>  ·  <b>QTY ' + g.qty + '</b>  FROM ' + fmtDate(f) + ' → TO ' + fmtDate(t);
+        } else {
+          var srcDate = g.sources[0].weekDate;
+          detail = g.dests.map(function (dst) {
+            var dstQty = dst.newQty - dst.oldQty;
+            return '<b>' + wkDelta(srcDate, dst.weekDate) + '</b>  ·  <b>QTY ' + dstQty + '</b>  FROM ' + fmtDate(srcDate) + ' → TO ' + fmtDate(dst.weekDate);
+          }).join('<br>');
+        }
+        info = '<span class="chip ' + cls + '">' + g.dir + '</span>' +
+               '<div class="rv-text"><span class="rv-id">DPN ' + esc(g.partNo) + ' · SO ' + esc(g.so) +
+               (g.pastDue ? ' <span class="tag-due">PAST-DUE</span>' : '') + '</span>' +
+               '<span class="muted rv-detail">' + detail + '</span></div>';
+      } else if (g.synthetic) {
+        info = '<span class="chip decrease">DECREASE</span>' +
+               '<div class="rv-text">DPN ' + esc(g.partNo) + '  ·  SO ' + esc(g.so) +
+               '<br><span class="muted"><b>QTY net −' + g.qty + '</b>  w/e ' +
+               g.sources.map(function (e) { return fmtDate(e.weekDate); }).join(', ') + '</span></div>';
+      } else {
+        var e = g.edit;
+        info = '<span class="chip ' + g.type.toLowerCase() + '">' + g.type + '</span>' +
+               '<div class="rv-text">DPN ' + esc(g.partNo) + '  ·  SO ' + esc(g.so) +
+               '<br><span class="muted"><b>QTY ' + e.oldQty + ' → ' + e.newQty + '</b>  w/e ' + fmtDate(e.weekDate) + '</span></div>';
+      }
+      var line = document.createElement('div');
+      line.className = 'rv-line'; line.id = 'rvline-' + i;
+      line.innerHTML = '<div class="rv-info">' + info + '</div><div class="rv-reason">' + reasonControls(i) + '</div>';
+      list.appendChild(line);
+    });
+    commitGroups.forEach(function (g, i) {
+      var sel = document.getElementById('rsel-' + i);
+      sel.addEventListener('change', function () {
+        var txt = document.getElementById('rtxt-' + i);
+        if (sel.value === OTHER) { txt.classList.add('show'); txt.focus(); } else { txt.classList.remove('show'); }
+      });
+    });
+    document.getElementById('reviewErr').textContent = '';
+    document.getElementById('applyAll').value = '';
+    document.getElementById('reviewCount').textContent = commitGroups.length + ' line' + (commitGroups.length === 1 ? '' : 's');
+    var b = document.getElementById('saveAllBtn'); b.disabled = false; b.textContent = 'Save all changes';
+    document.getElementById('veil').classList.add('open');
+  }
+  function reasonControls(i) {
+    var opts = '<option value="">Select a reason…</option>';
+    DATA.presets.forEach(function (p) { opts += '<option value="' + esc(p) + '">' + esc(p) + '</option>'; });
+    opts += '<option value="' + OTHER + '">Other (write your own)…</option>';
+    return '<select id="rsel-' + i + '">' + opts + '</select>' +
+           '<textarea id="rtxt-' + i + '" placeholder="Describe the reason…"></textarea>';
+  }
+  function resolveReason(i) {
+    var sel = document.getElementById('rsel-' + i);
+    if (sel.value === OTHER) return document.getElementById('rtxt-' + i).value.trim();
+    return sel.value;
+  }
+  function buildPresetSelects(presets) {
+    var all = document.getElementById('applyAll');
+    var opts = '<option value="">—</option>';
+    presets.forEach(function (p) { opts += '<option value="' + esc(p) + '">' + esc(p) + '</option>'; });
+    all.innerHTML = opts;
+    all.addEventListener('change', function () {
+      if (!all.value) return;
+      commitGroups.forEach(function (g, i) {
+        var sel = document.getElementById('rsel-' + i);
+        if (sel) { sel.value = all.value; var txt = document.getElementById('rtxt-' + i); if (txt) txt.classList.remove('show'); document.getElementById('rvline-' + i).classList.remove('missing'); }
+      });
+    });
+  }
+  function closeReview() { document.getElementById('veil').classList.remove('open'); }
+
+  function serEdit(e) {
+    return { rowNum:e.rowNum, col:e.col, weekDate:e.weekDate, oldQty:e.oldQty, newQty:e.newQty, unitPrice:e.unitPrice, partNo:e.partNo, so:e.so };
+  }
+
+  // ── Save all ──────────────────────────────────────────────────────────
+  function saveAll() {
+    var resolved = [], missing = false;
+    commitGroups.forEach(function (g, i) {
+      var reason = resolveReason(i);
+      var line = document.getElementById('rvline-' + i);
+      if (!reason) { missing = true; line.classList.add('missing'); } else { line.classList.remove('missing'); }
+      resolved.push(reason);
+    });
+    if (missing) { document.getElementById('reviewErr').textContent = 'Add a reason for each highlighted change.'; return; }
+    document.getElementById('reviewErr').textContent = '';
+
+    var groups = commitGroups.map(function (g, i) {
+      var reason = resolved[i];
+      var cells = g.commitCells.map(function (e) { return { rowNum:e.rowNum, col:e.col, newQty:e.newQty }; });
+      if (g.kind === 'move') return { kind:'move', rationale:reason, cells:cells, note:g.note || '', sources:g.sources.map(serEdit), dests:g.dests.map(serEdit) };
+      if (g.synthetic) return { kind:'synthetic', rationale:reason, cells:cells, qty:g.qty, sources:g.sources.map(serEdit) };
+      return { kind:'single', rationale:reason, cells:cells, edit:serEdit(g.edit) };
+    });
+
+    var btn = document.getElementById('saveAllBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    document.getElementById('saveState').textContent = 'Saving…';
+
+    google.script.run
+      .withSuccessHandler(function (res) {
+        document.getElementById('saveState').textContent = 'Ready';
+        if (res && res.ok) {
+          pending.forEach(function (e, k) { savedKeys.add(k); DATA.rows[e.ri].qtys[e.wi] = (e.newQty === 0 ? '' : e.newQty); });
+          pending.clear(); reRenderAll(); updateHeaderTotals(); updateMonthBand(); updateCommitUI(); closeReview();
+          toast(res.applied + ' change' + (res.applied === 1 ? '' : 's') + ' saved and logged.', true);
+        } else {
+          btn.disabled = false; btn.textContent = 'Save all changes';
+          var msg = (res && res.errors && res.errors.length) ? ('Save failed: ' + res.errors[0]) : 'Save failed.';
+          document.getElementById('reviewErr').textContent = msg;
+        }
+      })
+      .withFailureHandler(function (e) {
+        btn.disabled = false; btn.textContent = 'Save all changes';
+        document.getElementById('saveState').textContent = 'Ready';
+        document.getElementById('reviewErr').textContent = (e && e.message) ? e.message : 'Save failed. Try again.';
+      })
+      .submitBatch(groups);
+  }
+
+  // ── Confirm modal ─────────────────────────────────────────────────────
+  function askConfirm(title, msg, okLabel, onOk) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent = msg;
+    document.getElementById('confirmOk').textContent = okLabel;
+    pendingConfirm = onOk;
+    document.getElementById('confirmVeil').classList.add('open');
+  }
+  function closeConfirm() { document.getElementById('confirmVeil').classList.remove('open'); pendingConfirm = null; }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+  function showOverlay(on) { document.getElementById('overlay').style.display = on ? 'grid' : 'none'; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]; }); }
+  function money(n) { var v = Number(n) || 0; return (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString(undefined, { minimumFractionDigits:0, maximumFractionDigits:0 }); }
+  function valueK(v) { v = Number(v) || 0; var a = Math.abs(v), s = v < 0 ? '-$' : '$';
+    return a >= 1e6 ? (s + (a / 1e6).toFixed(1) + 'M') : (s + (a / 1000).toFixed(1) + 'k'); }
+  var toastTimer;
+  function toast(msg, ok) {
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast show ' + (ok ? 'ok' : 'bad');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.className = 'toast ' + (ok ? 'ok' : 'bad'); }, 3200);
+  }
+
+  // ── Wire up ───────────────────────────────────────────────────────────
+  document.getElementById('commitBtn').addEventListener('click', openReview);
+  document.getElementById('discardBtn').addEventListener('click', discardAll);
+  document.getElementById('saveAllBtn').addEventListener('click', saveAll);
+  document.getElementById('cancelBtn').addEventListener('click', closeReview);
+  document.getElementById('veil').addEventListener('mousedown', function (e) { if (e.target === this) closeReview(); });
+  document.getElementById('confirmOk').addEventListener('click', function () { var fn = pendingConfirm; closeConfirm(); if (fn) fn(); });
+  document.getElementById('confirmCancel').addEventListener('click', closeConfirm);
+  document.getElementById('confirmVeil').addEventListener('mousedown', function (e) { if (e.target === this) closeConfirm(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (document.getElementById('confirmVeil').classList.contains('open')) closeConfirm();
+    else if (document.getElementById('veil').classList.contains('open')) closeReview();
+  });
+  document.getElementById('reloadBtn').addEventListener('click', function () {
+    if (pending.size) {
+      askConfirm('Discard unsaved changes?',
+        'Reloading will discard ' + pending.size + ' unsaved change' + (pending.size === 1 ? '' : 's') + ' and refetch the sheet.',
+        'Discard & reload', boot);
+    } else { boot(); }
+  });
+
+  document.getElementById('valueToggle').addEventListener('click', function () {
+    showValues = !showValues;
+    this.textContent = showValues ? 'Hide $' : 'Show $';
+    this.classList.toggle('on', showValues);
+    reRenderAll();
+  });
+
+  document.getElementById('sortMeasure').addEventListener('click', function () {
+    sortMeasure = (sortMeasure === 'qty') ? 'val' : 'qty';
+    this.textContent = 'Sort: ' + (sortMeasure === 'qty' ? 'Qty' : '$');
+    this.classList.toggle('on', sortMeasure === 'val');
+    // re-apply current sort if a week column is active
+    if (sortState.key && sortState.key.indexOf('wk:') === 0) { applySort(); renderSortArrows(); }
+  });
+
+  document.getElementById('reconcileToggle').addEventListener('click', function () {
+    showReconcile = !showReconcile;
+    this.classList.toggle('on', showReconcile);
+    applyReconcile();
+  });
+
+  var sortMenu = document.getElementById('sortMenu');
+  function openSortMenu(th, ev) {
+    var r = th.getBoundingClientRect();
+    sortMenu.style.left = Math.max(8, r.left) + 'px';
+    sortMenu.style.top  = (r.bottom + 2) + 'px';
+    sortMenu.querySelectorAll('button').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-skey') === sortState.key);
+    });
+    sortMenu.classList.add('open');
+    ev.stopPropagation();
+  }
+  function closeSortMenu() { sortMenu.classList.remove('open'); }
+  sortMenu.querySelectorAll('button').forEach(function (b) {
+    b.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      onSort(b.getAttribute('data-skey'));
+      closeSortMenu();
+    });
+  });
+  document.addEventListener('click', function (e) {
+    if (sortMenu.classList.contains('open') && !sortMenu.contains(e.target)) closeSortMenu();
+  });
+
+  var filterEl = document.getElementById('filter');
+  var filterClear = document.getElementById('filterClear');
+  function runFilter() {
+    var q = filterEl.value.trim().toLowerCase();
+    filterClear.classList.toggle('show', filterEl.value.length > 0);
+    document.querySelectorAll('#body tr').forEach(function (tr) {
+      tr.style.display = (!q || tr.dataset.search.indexOf(q) !== -1) ? '' : 'none';
+    });
+    updateMonthBand();
+  }
+  filterEl.addEventListener('input', runFilter);
+  filterClear.addEventListener('click', function () { filterEl.value = ''; runFilter(); filterEl.focus(); });
+
+  window.addEventListener('beforeunload', function (e) { if (pending.size > 0) { e.preventDefault(); e.returnValue = ''; } });
+
+  boot();
+</script>
+</body>
+</html>
