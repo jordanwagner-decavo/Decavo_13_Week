@@ -321,9 +321,6 @@
     }
     try {
       DATA = d; CWI = (d.currentWeekIndex == null ? -1 : d.currentWeekIndex);
-      DATA.rows.forEach(function (r) {
-        r.gospel = r.qtys.reduce(function (a, q) { return a + (q === '' ? 0 : Number(q)); }, 0);
-      });
       pending.clear(); savedKeys.clear();
       sortState = { key:null, dir:'asc' };
       document.getElementById('ctxLine').textContent =
@@ -358,7 +355,7 @@
       '<th class="c-pn sticky-l l1 sortable" data-sort="partNo">Part No.<span class="sort-ar"></span></th>' +
       '<th class="c-desc sticky-l l2 sortable" data-sort="description" style="text-align:left">Description<span class="sort-ar"></span></th>' +
       '<th class="c-up sticky-l l3 sortable" data-sort="unitPrice">Unit Price<span class="sort-ar"></span></th>' +
-      '<th class="c-tot sticky-l l4 sortable" data-sort="total">SO TOTALS<span class="sort-ar"></span></th>';
+      '<th class="c-tot sticky-l l4 sortable" data-sort="total" title="Total open qty on order from P&amp;P. ⚠ flags open qty not yet covered by planned + past-due qty.">SO TOTALS<span class="sort-ar"></span></th>';
     DATA.weeks.forEach(function (wk, wi) {
       var monthStart = (wi > 0 && DATA.weekMonths && DATA.weekMonths[wi] !== DATA.weekMonths[wi - 1]);
       var cls = 'c-qty sortable' + (wi % 2 === 1 ? ' wk-alt' : '') + (wi === CWI ? ' wk-now' : '') + (monthStart ? ' mb-edge' : '');
@@ -474,26 +471,37 @@
     }
     return miss;
   }
-  // Total delivery qty = shipped actuals (past) + planned (current & future).
-  // Gospel total comes from the sheet at load and never changes.
-  function rowTotal(ri) {
-    var g = DATA.rows[ri].gospel || 0;
-    return { qty: g, val: g * (DATA.rows[ri].unitPrice || 0) };
+  // Total qty on order for this SO/DPN, from the P&P export (open qty only —
+  // already shipped units are not included in P&P Open Qty).
+  function onOrder(ri) {
+    return (DATA.rows[ri].demand || []).reduce(function (a, d) { return a + (Number(d.qty) || 0); }, 0);
   }
-  // Sum accounted for: shipped actuals (past) + planned (current + future).
-  function effectiveSum(ri) {
+  // SO TOTALS column value: the remaining open qty on order from P&P.
+  function rowTotal(ri) {
+    var q = onOrder(ri);
+    return { qty: q, val: q * (DATA.rows[ri].unitPrice || 0) };
+  }
+  // Unshipped planned supply that can still cover the open P&P demand:
+  //   past-due (planned but not yet shipped) + planned current/future (pending wins).
+  // Shipped actuals are excluded — P&P Open Qty already nets them out.
+  function coverage(ri) {
     var q = 0;
-    DATA.weeks.forEach(function (wk, wi) {
-      if (CWI >= 0 && wi < CWI) q += (DATA.rows[ri].actualQtys || [])[wi] || 0;
-      else q += effQty(ri, wi);
-    });
+    for (var wi = 0; wi < DATA.weeks.length; wi++) {
+      if (CWI >= 0 && wi < CWI) {
+        var plan = effQty(ri, wi);
+        var act  = (DATA.rows[ri].actualQtys || [])[wi] || 0;
+        if (plan > act) q += (plan - act);   // past-due, still owed
+      } else {
+        q += effQty(ri, wi);                 // current + future planned
+      }
+    }
     return q;
   }
   function renderTotal(td, ri) {
-    var t = rowTotal(ri);
-    var diff = t.qty - effectiveSum(ri);   // >0 short → push; <0 over → excess
-    td.classList.toggle('warn', diff !== 0);
-    var note = diff > 0 ? ('⚠ ' + diff + ' to push') : (diff < 0 ? ('⚠ ' + Math.abs(diff) + ' in excess') : '');
+    var t = rowTotal(ri);                     // open qty on order (P&P)
+    var diff = t.qty - coverage(ri);          // >0 → not enough planned to cover the SO
+    td.classList.toggle('warn', diff > 0);
+    var note = diff > 0 ? ('⚠ ' + diff + ' to plan') : '';
     var qd = String(t.qty);
     if (showValues) {
       td.innerHTML = '<div class="cell-pad cell-dual"><span class="cq">' + qd + '</span><span class="cv">' + valueK(t.val) + '</span>' +
