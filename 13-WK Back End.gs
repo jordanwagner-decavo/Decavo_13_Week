@@ -180,12 +180,16 @@ function getScheduleData() {
 
       const qtys = [], actualQtys = [], actualVals = [];
       weeks.forEach(function (w) {
+        // Number() on non-numeric cell text yields NaN, which is not valid JSON
+        // and makes google.script.run silently hand the client `null`. Coerce any
+        // non-numeric planned/actual value to blank/0 so the payload stays safe.
         var qv = r[w.col - 1];
-        qtys.push((qv === '' || qv === null) ? '' : Number(qv));
-        var aq = r[w.col - 1 + ACT_QTY_OFF];
-        actualQtys.push((aq === '' || aq === null) ? 0 : Number(aq));
-        var av = r[w.col - 1 + ACT_SALES_OFF];
-        actualVals.push((av === '' || av === null) ? 0 : Number(av));
+        var qn = Number(qv);
+        qtys.push((qv === '' || qv === null || isNaN(qn)) ? '' : qn);
+        var aqn = Number(r[w.col - 1 + ACT_QTY_OFF]);
+        actualQtys.push(isNaN(aqn) ? 0 : aqn);
+        var avn = Number(r[w.col - 1 + ACT_SALES_OFF]);
+        actualVals.push(isNaN(avn) ? 0 : avn);
       });
 
       rows.push({
