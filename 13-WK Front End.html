@@ -104,12 +104,12 @@
     .cell-dual .cq { font-weight:500; }
     .cell-dual .cq.ok { color:var(--now-line); }
     .cell-dual .cq.under { color:var(--red); }
-    .c-tot { width:96px; min-width:96px; background:var(--info-col); }
+    .c-tot { min-width:112px; width:auto; white-space:nowrap; background:var(--info-col); }
     #grid thead th.c-tot { background:var(--info-head); }
     #grid .c-tot { border-right:2px solid #c2ccd6; }
     td.c-tot.warn .cell-dual .cq, td.c-tot.warn .cell-pad { color:var(--amber); }
     td.c-tot.warn { background:var(--amber-bg); }
-    .miss { display:block; margin-top:2px; font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--amber); font-weight:600; }
+    .miss { display:block; margin-top:2px; font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--amber); font-weight:600; white-space:nowrap; }
     .miss.push { color:var(--red); }
     td.locked { cursor:not-allowed; }
     td.locked .cell-pad, td.locked .cell-dual { opacity:.82; }
