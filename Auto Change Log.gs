@@ -15,7 +15,8 @@
  *    DECREASE  — qty decreased on a single week, not to zero (no paired edit)
  *    ZERO      — qty zeroed out on a single week (no paired edit)
  *
- *  STATUS:  Source tab "WCB 13 Week Release". Log/P&P/Forecast still on TEST tabs.
+ *  STATUS:  TESTING — source tab pointed at "13-WK TEST". Log/P&P/Forecast on
+ *           TEST tabs. Switch SOURCE_SHEET to the live tab to go live.
  *
  *  COLUMN STRUCTURE (Change Log TEST)
  *    A: SO | B: Part No. | C: Description | D: Unit Price
@@ -28,7 +29,7 @@
  */
 
 const CONFIG = {
-  SOURCE_SHEET:    '13 Week Release',
+  SOURCE_SHEET:    '13-WK TEST',
   LOG_SHEET:       'Change Log TEST',
   WEEK_DATE_ROW:   2,
   HEADER_ROW:      3,
