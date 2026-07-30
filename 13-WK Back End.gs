@@ -27,7 +27,7 @@ const RATIONALE_PRESETS = [
 // Months in col A (e.g. "June 26"), FY budget in col C, Current Sales BKLG written
 // to col D, Delta (D − C) written to col E. Data starts at row 3.
 const FORECAST = {
-  SHEET:      'Fiscal Year Forecast TEST',
+  SHEET:      'Fiscal Year Forecast',
   FIRST_ROW:  3,
   MONTH_COL:  1,   // A
   BUDGET_COL: 3,   // C
@@ -38,8 +38,11 @@ const MONTH_NAMES = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','A
 
 // ─── P&P (SO export from ERP) ────────────────────────────────────────────────
 // Doc No (SO#) col A, Part Number col E, Open Qty col G, Delivery/Due Date col I.
+// The tab is renamed "P&P MM.DD" (month.day of the update, no leading zeros)
+// each time it's refreshed, so the exact name is resolved at runtime rather than
+// hard-coded — see resolvePPSheet_().
 const PP = {
-  SHEET:     'P&P TEST',
+  SHEET_PREFIX: 'P&P',   // dated tab "P&P MM.DD" resolved via resolvePPSheet_()
   FIRST_ROW: 2,    // row 1 = headers
   SO_COL:    1,    // A
   PART_COL:  5,    // E
@@ -64,10 +67,25 @@ function monthKey_(val) {
   return s;
 }
 
+// Finds the current P&P tab. Its name is "P&P MM.DD" (month.day of the last
+// update, no leading zeros), so we match that dated pattern and, if more than
+// one exists, keep the most recent by date. Returns the Sheet or null.
+function resolvePPSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var re = new RegExp('^' + PP.SHEET_PREFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+(\\d{1,2})\\.(\\d{1,2})$');
+  var best = null, bestKey = -1;
+  ss.getSheets().forEach(function (sh) {
+    var m = sh.getName().match(re);
+    if (!m) return;
+    var key = Number(m[1]) * 100 + Number(m[2]);   // MM.DD → sortable number
+    if (key > bestKey) { bestKey = key; best = sh; }
+  });
+  return best;
+}
+
 // Reads the P&P export → { 'SO|PART': [ {due:'YYYY-MM-DD', qty:Number}, ... ] }.
 function readPP_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = ss.getSheetByName(PP.SHEET);
+  var sh = resolvePPSheet_();
   var out = {};
   if (!sh) return out;
   var last = sh.getLastRow();

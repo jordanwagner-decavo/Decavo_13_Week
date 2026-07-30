@@ -4,7 +4,7 @@
  * ============================================================================
  *
  *  PURPOSE
- *    Appends a row to "Change Log TEST" whenever a Planned Qty cell changes.
+ *    Appends a row to "Change Log" whenever a Planned Qty cell changes.
  *    Quantity moved between weeks is merged into one PUSH-OUT / PULL-IN row.
  *    Actual columns are ignored.
  *
@@ -15,10 +15,10 @@
  *    DECREASE  — qty decreased on a single week, not to zero (no paired edit)
  *    ZERO      — qty zeroed out on a single week (no paired edit)
  *
- *  STATUS:  TESTING — source tab pointed at "13-WK TEST". Log/P&P/Forecast on
- *           TEST tabs. Switch SOURCE_SHEET to the live tab to go live.
+ *  STATUS:  LIVE — source "13 Week Release", log "Change Log", forecast
+ *           "Fiscal Year Forecast", P&P resolved from the dated "P&P MM.DD" tab.
  *
- *  COLUMN STRUCTURE (Change Log TEST)
+ *  COLUMN STRUCTURE (Change Log)
  *    A: SO | B: Part No. | C: Description | D: Unit Price
  *    E: Moved Qty | F: Moved Value | G: Original Date | H: New Date
  *    I: Weeks Moved | J: Change Type | K: Notes | L: Date Time | M: User
@@ -29,12 +29,12 @@
  */
 
 const CONFIG = {
-  SOURCE_SHEET:    '13-WK TEST',
-  LOG_SHEET:       'Change Log TEST',
+  SOURCE_SHEET:    '13 Week Release',
+  LOG_SHEET:       'Change Log',
   WEEK_DATE_ROW:   2,
   HEADER_ROW:      3,
   FIRST_DATA_ROW:  5,
-  FIRST_WEEK_COL:  8,
+  FIRST_WEEK_COL:  10,   // col J — first week's Planned Qty (cols H/I hold Unscheduled Value/Qty)
   GROUP_SIZE:      4,
   UNIT_PRICE_COL:  5,
   MERGE_WINDOW_MS: 5 * 60 * 1000  // 5 minutes
