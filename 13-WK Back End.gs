@@ -175,12 +175,10 @@ function getScheduleData() {
     const all = sheet.getRange(CONFIG.FIRST_DATA_ROW, 1, numRows, lastCol).getValues();
     for (let i = 0; i < all.length; i++) {
       const r  = all[i];
-      const so   = r[0];
-      const part = r[2];
-      // Only real order lines: skip any row missing an SO# (col A) or DPN# (col C).
-      // This excludes trailing/notes rows below the schedule from the data object.
-      if (so   == null || String(so).trim()   === '') continue;
-      if (part == null || String(part).trim() === '') continue;
+      const so = r[0];
+      // Only real order lines: the SO# in col A must be a 5-digit number.
+      // Anything else (blank, notes, headers, trailing bad-data rows) is excluded.
+      if (!/^\d{5}$/.test(String(so).trim())) continue;
 
       const qtys = [], actualQtys = [], actualVals = [];
       weeks.forEach(function (w) {

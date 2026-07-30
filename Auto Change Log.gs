@@ -105,8 +105,7 @@ function findBadCells() {
   const all = sheet.getRange(CONFIG.FIRST_DATA_ROW, 1, lastRow - CONFIG.FIRST_DATA_ROW + 1, lastCol).getValues();
   const hits = [];
   for (let i = 0; i < all.length; i++) {
-    const so = all[i][0], part = all[i][2];
-    if (so == null || String(so).trim() === '' || part == null || String(part).trim() === '') continue; // skip non-order-line rows
+    if (!/^\d{5}$/.test(String(all[i][0]).trim())) continue; // skip non-order-line rows (SO# must be a 5-digit number)
     for (let col = CONFIG.FIRST_WEEK_COL; col <= lastCol; col++) {
       const v = all[i][col - 1];
       if (v === '' || v === null) continue;
