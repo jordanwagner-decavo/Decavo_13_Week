@@ -34,7 +34,7 @@ const CONFIG = {
   WEEK_DATE_ROW:   2,
   HEADER_ROW:      3,
   FIRST_DATA_ROW:  5,
-  FIRST_WEEK_COL:  8,
+  FIRST_WEEK_COL:  10,   // col J — first week's Planned Qty (cols H/I hold Unscheduled Value/Qty)
   GROUP_SIZE:      4,
   UNIT_PRICE_COL:  5,
   MERGE_WINDOW_MS: 5 * 60 * 1000  // 5 minutes
