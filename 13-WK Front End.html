@@ -314,6 +314,11 @@
     google.script.run.withSuccessHandler(onData).withFailureHandler(onErr).getScheduleData();
   }
   function onData(d) {
+    if (!d) {
+      showOverlay(false);
+      toast('The server returned no data — a cell in a Planned/Actual column may contain non-numeric text. Fix it in the sheet and Reload.', false);
+      return;
+    }
     try {
       DATA = d; CWI = (d.currentWeekIndex == null ? -1 : d.currentWeekIndex);
       DATA.rows.forEach(function (r) {

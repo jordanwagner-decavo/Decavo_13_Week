@@ -93,6 +93,29 @@ function diagnose() {
 }
 
 /**
+ * Diagnostic: logs the A1 reference of every non-numeric cell in the weekly
+ * Planned/Actual columns of the source sheet. Such text yields NaN, which the
+ * web app now coerces away — this just helps find data-entry slips to clean up.
+ */
+function findBadCells() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SOURCE_SHEET);
+  if (!sheet) { Logger.log('Source sheet "' + CONFIG.SOURCE_SHEET + '" was not found.'); return; }
+  const lastRow = sheet.getLastRow(), lastCol = sheet.getLastColumn();
+  if (lastRow < CONFIG.FIRST_DATA_ROW) { Logger.log('No data rows.'); return; }
+  const all = sheet.getRange(CONFIG.FIRST_DATA_ROW, 1, lastRow - CONFIG.FIRST_DATA_ROW + 1, lastCol).getValues();
+  const hits = [];
+  for (let i = 0; i < all.length; i++) {
+    if (!/^\d{5}$/.test(String(all[i][0]).trim())) continue; // skip non-order-line rows (SO# must be a 5-digit number)
+    for (let col = CONFIG.FIRST_WEEK_COL; col <= lastCol; col++) {
+      const v = all[i][col - 1];
+      if (v === '' || v === null) continue;
+      if (isNaN(Number(v))) hits.push(columnToLetter_(col) + (CONFIG.FIRST_DATA_ROW + i) + ' = "' + v + '"');
+    }
+  }
+  Logger.log(hits.length ? hits.join('\n') : 'No non-numeric cells found in week columns.');
+}
+
+/**
  * Phase 2 + 4: single-cell change logging with move-merge.
  * Registered as an installable on-edit trigger.
  */
