@@ -110,6 +110,7 @@
     td.c-tot.warn .cell-dual .cq, td.c-tot.warn .cell-pad { color:var(--amber); }
     td.c-tot.warn { background:var(--amber-bg); }
     .miss { display:block; margin-top:2px; font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--amber); font-weight:600; }
+    .miss.push { color:var(--red); }
     td.locked { cursor:not-allowed; }
     td.locked .cell-pad, td.locked .cell-dual { opacity:.82; }
     #grid tbody td.behind { background:#fce4dd !important; box-shadow:inset 0 0 0 1px var(--red); }
@@ -355,7 +356,7 @@
       '<th class="c-pn sticky-l l1 sortable" data-sort="partNo">Part No.<span class="sort-ar"></span></th>' +
       '<th class="c-desc sticky-l l2 sortable" data-sort="description" style="text-align:left">Description<span class="sort-ar"></span></th>' +
       '<th class="c-up sticky-l l3 sortable" data-sort="unitPrice">Unit Price<span class="sort-ar"></span></th>' +
-      '<th class="c-tot sticky-l l4 sortable" data-sort="total" title="Total open qty on order from P&amp;P. ⚠ flags open qty not yet covered by planned + past-due qty.">SO TOTALS<span class="sort-ar"></span></th>';
+      '<th class="c-tot sticky-l l4 sortable" data-sort="total" title="Total open qty on order from P&amp;P. ⚠ N to plan = open qty not planned in any week. ↩ N to push = past-due qty (planned in a past week, not shipped) that needs to be pushed to a future week.">SO TOTALS<span class="sort-ar"></span></th>';
     DATA.weeks.forEach(function (wk, wi) {
       var monthStart = (wi > 0 && DATA.weekMonths && DATA.weekMonths[wi] !== DATA.weekMonths[wi - 1]);
       var cls = 'c-qty sortable' + (wi % 2 === 1 ? ' wk-alt' : '') + (wi === CWI ? ' wk-now' : '') + (monthStart ? ' mb-edge' : '');
@@ -499,15 +500,18 @@
   }
   function renderTotal(td, ri) {
     var t = rowTotal(ri);                     // open qty on order (P&P)
-    var diff = t.qty - coverage(ri);          // >0 → not enough planned to cover the SO
-    td.classList.toggle('warn', diff > 0);
-    var note = diff > 0 ? ('⚠ ' + diff + ' to plan') : '';
+    var toPlan = t.qty - coverage(ri);        // open qty not planned anywhere → needs new plan
+    var toPush = rowMiss(ri);                 // past-due: planned in the past, not shipped → push
+    td.classList.toggle('warn', toPlan > 0 || toPush > 0);
+    var notes = '';
+    if (toPlan > 0) notes += '<span class="miss">⚠ ' + toPlan + ' to plan</span>';
+    if (toPush > 0) notes += '<span class="miss push">↩ ' + toPush + ' to push</span>';
     var qd = String(t.qty);
     if (showValues) {
       td.innerHTML = '<div class="cell-pad cell-dual"><span class="cq">' + qd + '</span><span class="cv">' + valueK(t.val) + '</span>' +
-        (note ? '<span class="miss">' + note + '</span>' : '') + '</div>';
+        notes + '</div>';
     } else {
-      td.innerHTML = '<div class="cell-pad"><span>' + qd + '</span>' + (note ? '<span class="miss">' + note + '</span>' : '') + '</div>';
+      td.innerHTML = '<div class="cell-pad"><span>' + qd + '</span>' + notes + '</div>';
     }
   }
   // How much of this row's pending future bumps counts as miss recovery.
