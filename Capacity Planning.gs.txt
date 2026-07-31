@@ -79,7 +79,17 @@ function refreshCapacity() {
   writeLamSchedule(ss, lamSchedule);
   buildDemandSheet(ss, demand);       // rebuild Demand Detail from the live P&P tab
   updateDemandStatus(ss, laborMap);   // then mark labor-data availability
-  SpreadsheetApp.getActiveSpreadsheet().toast('✅ Capacity refreshed!', 'Done', 3);
+
+  if (allWeeks.length === 0) {
+    const msg = 'Refreshed, but no weekly demand was produced.\n\n' +
+      '• Demand rows read from the P&P tab: ' + demand.length + '\n' +
+      '• Labor parts counted (On P&P? = TRUE with data): ' + Object.keys(laborMap).length + '\n\n' +
+      'Check that a "P&P MM.DD" tab exists with data, that Part Labor Data rows are ' +
+      'marked On P&P? = TRUE, and that the DPNs match between the two.';
+    try { SpreadsheetApp.getUi().alert(msg); } catch (e) { ss.toast(msg, '⚠ No demand', 8); }
+  } else {
+    ss.toast('✅ Capacity refreshed!', 'Done', 3);
+  }
 }
 
 // ── READ LABOR DATA FROM SHEET ────────────────────────────────────
@@ -439,23 +449,30 @@ function writeWeeklyCapacity(ss, weeklyHours, allWeeks) {
   // Freeze
   ws.setFrozenRows(8);
 
-  // Apply conditional formatting: red background if demand > capacity
-  // We do this with a note — Google Sheets conditional formatting via script
-  const dataRange = ws.getRange(dataStartRow, 2, allWeeks.length, numDepts);
-  const rules = [];
-  DEPTS.forEach((dept, i) => {
-    const col = colLetters[i];
-    const capCell = '$' + col + '$6';
-    const range = ws.getRange(dataStartRow, i + 2, allWeeks.length, 1);
-    const rule = SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied('=' + col + dataStartRow + '>' + capCell)
-      .setBackground('#FFCDD2')
-      .setFontColor('#B71C1C')
-      .setRanges([range])
-      .build();
-    rules.push(rule);
-  });
-  ws.setConditionalFormatRules(rules);
+  // Apply conditional formatting: red background if demand > capacity.
+  // Guard the empty case — a 0-row range throws "number of rows must be at least 1".
+  if (allWeeks.length > 0) {
+    const rules = [];
+    DEPTS.forEach((dept, i) => {
+      const col = colLetters[i];
+      const capCell = '$' + col + '$6';
+      const range = ws.getRange(dataStartRow, i + 2, allWeeks.length, 1);
+      const rule = SpreadsheetApp.newConditionalFormatRule()
+        .whenFormulaSatisfied('=' + col + dataStartRow + '>' + capCell)
+        .setBackground('#FFCDD2')
+        .setFontColor('#B71C1C')
+        .setRanges([range])
+        .build();
+      rules.push(rule);
+    });
+    ws.setConditionalFormatRules(rules);
+  } else {
+    ws.setConditionalFormatRules([]);  // clear any stale rules
+    ws.getRange(totalRow + 1, 1, 1, totalCols).merge()
+      .setValue('⚠ No weekly demand computed — verify the P&P tab has rows and that Part Labor Data parts are marked On P&P? = TRUE with DPNs matching the P&P tab.')
+      .setBackground(COLOR.AMBER).setFontColor('#8A6D00').setFontStyle('italic')
+      .setHorizontalAlignment('center');
+  }
 }
 
 // ── WRITE LAM SCHEDULE SHEET ──────────────────────────────────────
