@@ -511,10 +511,40 @@ function updateDemandStatus(ss, laborMap) {
 
 // ── BUILD LABOR DATA SHEET ────────────────────────────────────────
 
+// True if the Part Labor Data tab already has a Part Number header with at
+// least one populated part row below it (used to avoid clobbering pasted data).
+function laborSheetHasData(ws) {
+  const data = ws.getDataRange().getValues();
+  for (let i = 0; i < data.length; i++) {
+    const idx = data[i].findIndex(c => String(c).trim() === 'Part Number');
+    if (idx >= 0) {
+      for (let j = i + 1; j < data.length; j++) {
+        if (String(data[j][idx]).trim() !== '') return true;
+      }
+      return false;
+    }
+  }
+  return false;
+}
+
 function buildLaborDataSheet(ss) {
   let ws = ss.getSheetByName('📋 Part Labor Data');
-  if (ws) ws.clear();
-  else ws = ss.insertSheet('📋 Part Labor Data');
+  if (ws) {
+    // Guard: never silently wipe pasted labor data. If the tab already has a
+    // populated Part Number column, confirm before clearing (Build All / Reseed).
+    if (laborSheetHasData(ws)) {
+      let ui = null;
+      try { ui = SpreadsheetApp.getUi(); } catch (e) {}
+      if (!ui) return;  // no UI context — refuse to clobber
+      const resp = ui.alert('Rebuild Part Labor Data?',
+        'The Part Labor Data tab already contains data. Rebuilding ERASES everything on it — your pasted values, the On P&P? formulas, and formatting — and replaces it with the built-in seed. Continue?',
+        ui.ButtonSet.YES_NO);
+      if (resp !== ui.Button.YES) { ss.toast('Kept existing Part Labor Data.', 'Skipped', 3); return; }
+    }
+    ws.clear();
+  } else {
+    ws = ss.insertSheet('📋 Part Labor Data');
+  }
 
   const headers = ['On P&P?','Part Number','CUSTOMER','Tool Cycles / Day','Parts / Cycle',
                    'PLOTTER','LAM','DEPART','CNC_TRIM','HAND_TRIM',
@@ -557,7 +587,7 @@ function buildLaborDataSheet(ss) {
     const hasData = lab.lam > 0 || lab.depart > 0 || lab.qa1 > 0;
 
     const vals = [
-      true, lab.pn, lab.customer, lab.cyclesPerDay, lab.upCount,
+      '', lab.pn, lab.customer, lab.cyclesPerDay, lab.upCount,
       lab.plotter, lab.lam, lab.depart, lab.cncTrim, lab.handTrim,
       lab.qa1, lab.qa2, lab.qa3, '', lab.kitting,
       lab.asy1, lab.asy2, '', '', lab.paint, '', lab.ship
@@ -567,6 +597,12 @@ function buildLaborDataSheet(ss) {
       const cell = ws.getRange(rowNum, i + 1);
       const isHourCol = i >= META_COLS;
       const isEmpty = (v === 0 && isHourCol) || v === '' || v === null;
+      if (i === 0) {
+        // On P&P? — always a live formula, never a static TRUE/FALSE
+        cell.setFormula(ppOnPpFormula(rowNum)).setBackground(bg)
+          .setHorizontalAlignment('center').setFontSize(9);
+        return;
+      }
       if (i === 1) {
         // Part Number cell — green if it has real labor data, red if not
         cell.setValue(v).setBackground(hasData ? '#00B050' : COLOR.RED)
@@ -586,7 +622,8 @@ function buildLaborDataSheet(ss) {
   // Blank cyan rows for PNs on demand but not in labor sheet
   [...allPns].filter(pn => !laborPns.has(pn)).sort().forEach(pn => {
     const desc = (DEMAND_DATA.find(r => r.pn === pn) || {}).desc || '';
-    ws.getRange(rowNum, 1).setBackground(COLOR.CYAN);  // On P&P? — leave blank until part is planned
+    ws.getRange(rowNum, 1).setFormula(ppOnPpFormula(rowNum))  // On P&P? — live formula
+      .setBackground(COLOR.CYAN).setHorizontalAlignment('center');
     ws.getRange(rowNum, 2).setValue(pn).setBackground(COLOR.CYAN).setFontWeight('bold').setFontColor('#003355');
     ws.getRange(rowNum, 3).setValue(desc).setBackground(COLOR.CYAN).setFontColor('#003355');
     ws.getRange(rowNum, 4, 1, headers.length - 3).setBackground(COLOR.CYAN);
@@ -697,17 +734,45 @@ function reseedLaborData(ss) {
   SpreadsheetApp.getActiveSpreadsheet().toast('Labor data reseeded from source.', 'Done', 3);
 }
 
-// ── CUSTOM FUNCTION: ON P&P? ──────────────────────────────────────
+// ── CUSTOM FUNCTIONS: ON P&P? ─────────────────────────────────────
 // Populates the "On P&P?" column. Put this in each row of column A of the
 // Part Labor Data sheet, e.g. in A9 (first data row):
-//   =IS_ON_PP_OR_ANCESTOR(B9, 'P&P 6-18'!F2:F, 'Parent to Child'!A2:C)
+//   =IS_ON_PP_OR_ANCESTOR(B9, PP_LIST(TODAY()), 'Parent to Child'!A2:C)
 // then fill down. readLaborData() only counts parts whose On P&P? = TRUE.
+// PP_LIST(TODAY()) auto-locates the current P&P tab, so the daily rename of
+// that tab never breaks these formulas.
+
+// Live "On P&P?" formula for a given sheet row (Part Number is in column B).
+function ppOnPpFormula(row) {
+  return "=IS_ON_PP_OR_ANCESTOR(B" + row + ", PP_LIST(TODAY()), 'Parent to Child'!A2:C)";
+}
+
+/**
+ * Column F (DPNs, row 2 down) of the CURRENT Pick & Pack tab — the sheet whose
+ * name starts with "P&P". The P&P tab is renamed with a new date each day, so
+ * this avoids hard-coding the date in a formula. Pass TODAY() as refreshToken
+ * so the value recomputes daily (custom functions cache until an arg changes).
+ * @param {number} refreshToken  Pass TODAY() to force a daily refresh.
+ * @return {Array} Column F values as a 2-D array, for use as ppRange.
+ * @customfunction
+ */
+function PP_LIST(refreshToken) {
+  const sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+  let pp = null;
+  for (let i = 0; i < sheets.length; i++) {
+    if (sheets[i].getName().trim().toUpperCase().indexOf('P&P') === 0) { pp = sheets[i]; break; }
+  }
+  if (!pp) throw new Error('No tab whose name starts with "P&P" was found.');
+  const last = pp.getLastRow();
+  if (last < 2) return [['']];
+  return pp.getRange(2, 6, last - 1, 1).getValues();  // column F = 6
+}
 
 /**
  * TRUE if a DPN — or any ancestor (parent, grandparent, …) — is on the
  * Pick & Pack list.
  * @param {string} dpn               Part number to check (e.g. D50567)
- * @param {Array}  ppRange           P&P list column, e.g. 'P&P 6-18'!F2:F
+ * @param {Array}  ppRange           P&P list column, e.g. PP_LIST(TODAY())
  * @param {Array}  parentChildRange  Parent→Child table, e.g. 'Parent to Child'!A2:C (A=parent, B=child)
  * @return {boolean}
  * @customfunction
