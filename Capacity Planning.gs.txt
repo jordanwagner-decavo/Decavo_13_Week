@@ -13,12 +13,12 @@
 // ── DEMAND SOURCE: THE P&P TAB ───────────────────────────────────
 // Demand is read live from the current "P&P MM.DD" tab (SAP B1 SO export),
 // resolved at runtime by resolvePPSheet(). Nothing is hard-coded.
-// P&P columns: DPN col F, Open Qty col G, Delivery/Due Date col I; row 1 = headers.
+// P&P columns: DPN col F, Description col G, Open Qty col H, Due Date col J; row 1 = headers.
 const PP_FIRST_ROW = 2;   // row 1 = headers
 const PP_DPN_COL   = 6;   // F  (Decavo Part Number — matches Part Labor Data)
-const PP_QTY_COL   = 7;   // G  (Open Qty = demand)
-const PP_DUE_COL   = 9;   // I  (Delivery / Due Date)
-const PP_DESC_COL  = 0;   // optional item-description column (0 = none)
+const PP_DESC_COL  = 7;   // G  (item description)
+const PP_QTY_COL   = 8;   // H  (Open Qty = demand)
+const PP_DUE_COL   = 10;  // J  (Delivery / Due Date)
 
 // ── CONSTANTS ────────────────────────────────────────────────────
 const APPLIED_HRS_PER_DAY = 6.75;
@@ -156,7 +156,7 @@ function resolvePPSheet(ss) {
 }
 
 // Reads demand live from the current P&P tab → [{pn, desc, dueDate:'YYYY-MM-DD', qty}].
-// P&P columns: DPN col F, Open Qty col G, Delivery/Due Date col I; row 1 = headers.
+// P&P columns: DPN col F, Description col G, Open Qty col H, Due Date col J; row 1 = headers.
 function readDemandFromPP(ss) {
   const sh = resolvePPSheet(ss);
   const out = [];
@@ -578,7 +578,7 @@ function buildDemandSheet(ss, demand) {
   ws.setRowHeight(1, 28);
 
   ws.getRange(2, 1, 1, headers.length).merge()
-    .setValue('Live from the current "P&P MM.DD" tab (DPN col F, Open Qty col G, Due Date col I). Rebuilt on every 🔄 Refresh.')
+    .setValue('Live from the current "P&P MM.DD" tab (DPN col F, Desc col G, Open Qty col H, Due Date col J). Rebuilt on every 🔄 Refresh.')
     .setBackground('#FFF3CD').setFontColor('#555555').setFontStyle('italic').setFontSize(9).setHorizontalAlignment('left');
   ws.setRowHeight(2, 14);
 
