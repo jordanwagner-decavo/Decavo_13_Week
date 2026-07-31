@@ -696,3 +696,51 @@ function reseedLaborData(ss) {
   buildLaborDataSheet(ss);
   SpreadsheetApp.getActiveSpreadsheet().toast('Labor data reseeded from source.', 'Done', 3);
 }
+
+// ── CUSTOM FUNCTION: ON P&P? ──────────────────────────────────────
+// Populates the "On P&P?" column. Put this in each row of column A of the
+// Part Labor Data sheet, e.g. in A9 (first data row):
+//   =IS_ON_PP_OR_ANCESTOR(B9, 'P&P 6-18'!F2:F, 'Parent to Child'!A2:C)
+// then fill down. readLaborData() only counts parts whose On P&P? = TRUE.
+
+/**
+ * TRUE if a DPN — or any ancestor (parent, grandparent, …) — is on the
+ * Pick & Pack list.
+ * @param {string} dpn               Part number to check (e.g. D50567)
+ * @param {Array}  ppRange           P&P list column, e.g. 'P&P 6-18'!F2:F
+ * @param {Array}  parentChildRange  Parent→Child table, e.g. 'Parent to Child'!A2:C (A=parent, B=child)
+ * @return {boolean}
+ * @customfunction
+ */
+function IS_ON_PP_OR_ANCESTOR(dpn, ppRange, parentChildRange) {
+  var key = function(v) { return (v === null || v === undefined) ? '' : String(v).trim(); };
+  var start = key(dpn);
+  if (!start) return false;
+
+  // A single-cell argument arrives as a scalar, not a 2-D array — normalize it.
+  if (!Array.isArray(ppRange)) ppRange = [[ppRange]];
+  if (!Array.isArray(parentChildRange)) parentChildRange = [[parentChildRange]];
+
+  var ppSet = {};
+  ppRange.forEach(function(row) { var k = key(row[0]); if (k) ppSet[k] = true; });
+
+  var childToParents = {};
+  parentChildRange.forEach(function(row) {
+    var parent = key(row[0]), child = key(row[1]);
+    if (!parent || !child) return;
+    (childToParents[child] = childToParents[child] || []).push(parent);
+  });
+
+  var visited = {};
+  function checkAncestors(pn) {
+    if (ppSet[pn]) return true;
+    if (visited[pn]) return false; // guards against circular BOM data
+    visited[pn] = true;
+    var parents = childToParents[pn] || [];
+    for (var i = 0; i < parents.length; i++) {
+      if (checkAncestors(parents[i])) return true;
+    }
+    return false;
+  }
+  return checkAncestors(start);
+}
