@@ -24,10 +24,10 @@ const APPLIED_HRS_PER_DAY = 6.75;
 const WORK_DAYS_PER_WEEK  = 5;
 const AVAIL_HRS_PER_PERSON_PER_WEEK = APPLIED_HRS_PER_DAY * WORK_DAYS_PER_WEEK; // 33.75
 
-const DEPTS = ['LAM','DEPART','CNC TRIM','HAND-TRIM','PLOTTER','QA','ASY','PAINT','SHIP','PLANNING','KITTING'];
+const DEPTS = ['LAM','DEPART','CNC TRIM','HAND-TRIM','PLOTTER','QA','KITTING','ASY','PAINT','SHIP'];
 const LAM_DEPTS    = ['LAM','DEPART','CNC TRIM','HAND-TRIM','PLOTTER'];
-const FINISH_DEPTS = ['QA','ASY','PAINT','SHIP'];
-const SCHED_DEPTS  = ['PLANNING','KITTING'];
+const FINISH_DEPTS = ['QA','KITTING','ASY','PAINT','SHIP'];
+const SCHED_DEPTS  = [];  // No per-job ops in the new layout: PLANNING removed, KITTING is now per-part (finish phase)
 
 // Dept colors (hex, no #)
 const DEPT_COLORS = {
@@ -85,38 +85,47 @@ function readLaborData(ss) {
   const ws = ss.getSheetByName('📋 Part Labor Data');
   if (!ws) { reseedLaborData(ss); return readLaborData(ss); }
   const data = ws.getDataRange().getValues();
-  // Find header row (row with "Part Number")
-  let hdrRow = -1;
+  // Find header row (row containing "Part Number" in any column) and note which
+  // column Part Number lives in — in the new layout it is column B, not A.
+  let hdrRow = -1, pnCol = -1;
   for (let i = 0; i < data.length; i++) {
-    if (String(data[i][0]).trim() === 'Part Number') { hdrRow = i; break; }
+    const idx = data[i].findIndex(c => String(c).trim() === 'Part Number');
+    if (idx >= 0) { hdrRow = i; pnCol = idx; break; }
   }
   if (hdrRow < 0) return {};
   const hdrs = data[hdrRow].map(h => String(h).trim());
+  const isYes = v => v === true || ['TRUE','YES','X'].indexOf(String(v).trim().toUpperCase()) >= 0;
   const map = {};
   for (let i = hdrRow + 1; i < data.length; i++) {
     const row = data[i];
-    const pn = String(row[0]).trim();
+    const pn = String(row[pnCol]).trim();
     if (!pn) continue;
     const obj = {};
     hdrs.forEach((h, j) => { obj[h] = row[j]; });
+    // Only count parts flagged on the Pick & Pack plan (On P&P? = TRUE)
+    if (!isYes(obj['On P&P?'])) continue;
     const n = k => { const v = parseFloat(obj[k]); return isNaN(v) ? 0 : v; };
     map[pn] = {
-      customer:     String(obj['CUSTOMER'] || ''),
-      cyclesPerDay: n('Cycles/Day') || 1,
-      upCount:      n('Tool UP Count') || 1,
-      planning:     n('PLANNING (PER JOB)'),
-      kitting:      n('Kitting (PER JOB)'),
-      plotter:      n('PLOTTER'),
-      lam:          n('LAM'),
-      depart:       n('DEPART'),
-      cncTrim:      n('CNC TRIM'),
-      handTrim:     n('HAND-TRIM'),
-      qa1:          n('QA 1'),    asy1: n('ASY 1'),
-      qa2:          n('QA 2'),    asy2: n('ASY 2'),
-      qa3:          n('QA 3 (auto inspect)'),
-      paint:        n('PAINT'),
-      qaFinal:      n('QA (Final)'),
-      ship:         n('SHIP'),
+      customer:      String(obj['CUSTOMER'] || ''),
+      cyclesPerDay:  n('Tool Cycles / Day') || 1,
+      upCount:       n('Parts / Cycle') || 1,
+      plotter:       n('PLOTTER'),
+      lam:           n('LAM'),
+      depart:        n('DEPART'),
+      cncTrim:       n('CNC_TRIM'),
+      handTrim:      n('HAND_TRIM'),
+      qa1:           n('QA_1'),
+      qa2:           n('QA_2'),
+      qa3:           n('QA_3'),
+      qa4:           n('QA_4'),
+      kitting:       n('KITTING'),
+      asy1:          n('ASY_1'),
+      asy2:          n('ASY_2'),
+      asyRepair:     n('ASY_REPAIR'),
+      outsourceDays: n('OUTSOURCE'),   // business days per MO — shifts LAM start earlier
+      paint1:        n('PAINT_1'),
+      paint2:        n('PAINT_2'),
+      ship:          n('SHIP'),
     };
   }
   return map;
@@ -131,11 +140,10 @@ function getDeptHrs(lab, dept) {
     case 'CNC TRIM': return lab.cncTrim;
     case 'HAND-TRIM':return lab.handTrim;
     case 'PLOTTER':  return lab.plotter;
-    case 'QA':       return lab.qa1 + lab.qa2 + lab.qa3 + lab.qaFinal;
-    case 'ASY':      return lab.asy1 + lab.asy2;
-    case 'PAINT':    return lab.paint;
+    case 'QA':       return lab.qa1 + lab.qa2 + lab.qa3 + lab.qa4;
+    case 'ASY':      return lab.asy1 + lab.asy2 + lab.asyRepair;
+    case 'PAINT':    return lab.paint1 + lab.paint2;
     case 'SHIP':     return lab.ship;
-    case 'PLANNING': return lab.planning;
     case 'KITTING':  return lab.kitting;
     default: return 0;
   }
@@ -172,8 +180,11 @@ function computeCapacity(laborMap) {
 
     const qty          = row.qty;
     const dueWeek      = mondayOfWeek(row.dueDate);
-    const lamDeadline  = addWeeks(dueWeek, -2);   // last week LAM must be DONE
-    const finishWeek   = addWeeks(dueWeek, -1);    // QA/ASY/PAINT must be done
+    // OUTSOURCE lead time (business days per MO) pushes upstream work earlier so
+    // there is time to outsource before the finish ops. Convert days → whole weeks.
+    const outsourceWeeks = lab.outsourceDays > 0 ? Math.ceil(lab.outsourceDays / WORK_DAYS_PER_WEEK) : 0;
+    const lamDeadline  = addWeeks(dueWeek, -2 - outsourceWeeks); // last week LAM must be DONE
+    const finishWeek   = addWeeks(dueWeek, -1);    // QA/KITTING/ASY/PAINT/SHIP load here
 
     // ── Cycle constraint: how many weeks of LAM needed? ──
     const partsPerWeek = lab.cyclesPerDay * lab.upCount * WORK_DAYS_PER_WEEK;
@@ -219,6 +230,7 @@ function computeCapacity(laborMap) {
       qty:           qty,
       cyclesPerDay:  lab.cyclesPerDay,
       upCount:       lab.upCount,
+      outsourceDays: lab.outsourceDays,
       partsPerWeek:  partsPerWeek,
       lamWeeksNeeded:lamWeeksNeeded,
       lamStart:      weekKey(lamStart),
@@ -235,7 +247,7 @@ function computeCapacity(laborMap) {
       const dueWeek = mondayOfWeek(row.dueDate);
       lamSchedule.push({
         pn: row.pn, desc: row.desc, dueDate: row.dueDate, qty: row.qty,
-        cyclesPerDay: '?', upCount: '?', partsPerWeek: '?',
+        cyclesPerDay: '?', upCount: '?', outsourceDays: '', partsPerWeek: '?',
         lamWeeksNeeded: '?', lamStart: '?', lamDeadline: weekKey(addWeeks(dueWeek,-2)),
         finishWeek: weekKey(addWeeks(dueWeek,-1)), hasLaborData: false, overloaded: false
       });
@@ -278,7 +290,7 @@ function writeWeeklyCapacity(ss, weeklyHours, allWeeks) {
 
   // Row 2 — Note
   ws.getRange(2, 1, 1, totalCols).merge()
-    .setValue('LAM/TRIM/PLOTTER hours spread backward from due date based on cycle rate & tool UP count  |  QA/ASY/PAINT/SHIP load 1 wk before due  |  Edit Part Labor Data → click Refresh')
+    .setValue('LAM/TRIM/PLOTTER hours spread backward from due date based on cycle rate & parts/cycle  |  QA/KITTING/ASY/PAINT/SHIP load 1 wk before due  |  OUTSOURCE days shift LAM start earlier  |  Edit Part Labor Data → click Refresh')
     .setBackground('#E8F5E9').setFontColor('#333333').setFontStyle('italic').setFontSize(9)
     .setHorizontalAlignment('center');
   ws.setRowHeight(2, 16);
@@ -311,7 +323,7 @@ function writeWeeklyCapacity(ss, weeklyHours, allWeeks) {
 
   // Row 6 — capacity formula
   ws.getRange(6, 1).setValue('Avail Hrs/Wk').setBackground('#E3F2FD').setFontColor('#1565C0').setFontStyle('italic').setHorizontalAlignment('center');
-  const colLetters = ['B','C','D','E','F','G','H','I','J','K','L'];
+  const colLetters = ['B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T'];
   DEPTS.forEach((dept, i) => {
     const cl = colLetters[i];
     ws.getRange(6, i + 2).setFormula('=' + cl + '5*' + AVAIL_HRS_PER_PERSON_PER_WEEK)
@@ -403,10 +415,10 @@ function writeLamSchedule(ss, lamSchedule) {
   ws.clearContents();
   ws.clearFormats();
 
-  const headers = ['Part Number','Description','Due Date','Open QTY',
-                   'Cycles/Day','Tool UP','Parts/Wk','LAM Wks Needed',
+  const headers = ['Part Number','Description','Due Date','Open QTY','Outsrc Days',
+                   'Cycles/Day','Parts/Cycle','Parts/Wk','LAM Wks Needed',
                    'LAM Start','LAM Deadline','Finish Ops Wk','Status'];
-  const colWidths = [110,280,100,80,80,70,80,110,100,110,110,180];
+  const colWidths = [110,280,100,80,80,80,80,80,110,100,110,110,180];
 
   // Title
   ws.getRange(1, 1, 1, headers.length).merge()
@@ -449,7 +461,7 @@ function writeLamSchedule(ss, lamSchedule) {
     }
 
     const vals = [
-      row.pn, row.desc, row.dueDate, row.qty,
+      row.pn, row.desc, row.dueDate, row.qty, row.outsourceDays,
       row.cyclesPerDay, row.upCount, row.partsPerWeek, row.lamWeeksNeeded,
       row.lamStart, row.lamDeadline, row.finishWeek, status
     ];
@@ -458,7 +470,7 @@ function writeLamSchedule(ss, lamSchedule) {
       const cell = ws.getRange(r, i + 1);
       cell.setValue(v).setBackground(rowHighlight).setFontSize(9);
       if (i === 0) cell.setFontWeight('bold');
-      if (i === 11) { cell.setBackground(statusBg).setFontColor(statusFg).setFontWeight('bold'); }
+      if (i === 12) { cell.setBackground(statusBg).setFontColor(statusFg).setFontWeight('bold'); }
       cell.setHorizontalAlignment(i <= 1 ? 'left' : 'center');
     });
     ws.setRowHeight(r, 15);
@@ -504,12 +516,12 @@ function buildLaborDataSheet(ss) {
   if (ws) ws.clear();
   else ws = ss.insertSheet('📋 Part Labor Data');
 
-  const headers = ['Part Number','CUSTOMER','Cycles/Day','Tool UP Count',
-                   'PLANNING (PER JOB)','Kitting (PER JOB)','PLOTTER',
-                   'LAM','DEPART','CNC TRIM','HAND-TRIM',
-                   'QA 1','ASY 1','QA 2','ASY 2','QA 3 (auto inspect)',
-                   'PAINT','QA (Final)','SHIP'];
-  const colWidths = [110,90,90,100,130,120,80,70,70,90,100,70,70,70,70,130,70,90,70];
+  const headers = ['On P&P?','Part Number','CUSTOMER','Tool Cycles / Day','Parts / Cycle',
+                   'PLOTTER','LAM','DEPART','CNC_TRIM','HAND_TRIM',
+                   'QA_1','QA_2','QA_3','QA_4','KITTING',
+                   'ASY_1','ASY_2','ASY_REPAIR','OUTSOURCE','PAINT_1','PAINT_2','SHIP'];
+  const colWidths = [70,110,90,100,90,80,70,70,90,100,60,60,60,60,80,70,70,90,90,80,80,70];
+  const META_COLS = 5;  // On P&P?, Part Number, CUSTOMER, Tool Cycles / Day, Parts / Cycle — rest are hour columns
 
   // Title
   ws.getRange(1, 1, 1, headers.length).merge()
@@ -519,7 +531,7 @@ function buildLaborDataSheet(ss) {
   ws.setRowHeight(1, 30);
 
   ws.getRange(2, 1, 1, headers.length).merge()
-    .setValue('🔵 CYAN = needs data  |  All hour columns = hours per unit  |  PLANNING/KITTING = per job (not × qty)')
+    .setValue('🔵 CYAN = needs data  |  On P&P? = TRUE to include a part  |  Cols F–V = hours per unit (× qty)  |  OUTSOURCE = business days per MO (shifts LAM start earlier)')
     .setBackground('#FFFDE7').setFontColor('#333333').setFontStyle('italic').setFontSize(9)
     .setHorizontalAlignment('center');
   ws.setRowHeight(2, 16);
@@ -545,26 +557,27 @@ function buildLaborDataSheet(ss) {
     const hasData = lab.lam > 0 || lab.depart > 0 || lab.qa1 > 0;
 
     const vals = [
-      lab.pn, lab.customer, lab.cyclesPerDay, lab.upCount,
-      lab.planning, lab.kitting, lab.plotter,
-      lab.lam, lab.depart, lab.cncTrim, lab.handTrim,
-      lab.qa1, lab.asy1, lab.qa2, lab.asy2, lab.qa3,
-      lab.paint, lab.qaFinal, lab.ship
+      true, lab.pn, lab.customer, lab.cyclesPerDay, lab.upCount,
+      lab.plotter, lab.lam, lab.depart, lab.cncTrim, lab.handTrim,
+      lab.qa1, lab.qa2, lab.qa3, '', lab.kitting,
+      lab.asy1, lab.asy2, '', '', lab.paint, '', lab.ship
     ];
 
     vals.forEach((v, i) => {
       const cell = ws.getRange(rowNum, i + 1);
-      const isEmpty = (v === 0 && i > 3) || v === '' || v === null;
-      if (i === 0) {
+      const isHourCol = i >= META_COLS;
+      const isEmpty = (v === 0 && isHourCol) || v === '' || v === null;
+      if (i === 1) {
+        // Part Number cell — green if it has real labor data, red if not
         cell.setValue(v).setBackground(hasData ? '#00B050' : COLOR.RED)
           .setFontColor(COLOR.WHITE).setFontWeight('bold');
       } else if (!hasData || isEmpty) {
-        cell.setValue(v === 0 && i > 3 ? '' : v).setBackground(COLOR.CYAN);
+        cell.setValue(v === 0 && isHourCol ? '' : v).setBackground(COLOR.CYAN);
       } else {
         cell.setValue(v).setBackground(bg);
-        if (typeof v === 'number' && v > 0 && i > 3) cell.setNumberFormat('0.000');
+        if (typeof v === 'number' && v > 0 && isHourCol) cell.setNumberFormat('0.000');
       }
-      cell.setHorizontalAlignment(i <= 1 ? 'left' : 'center').setFontSize(9);
+      cell.setHorizontalAlignment((i === 1 || i === 2) ? 'left' : 'center').setFontSize(9);
     });
     ws.setRowHeight(rowNum, 15);
     rowNum++;
@@ -573,9 +586,10 @@ function buildLaborDataSheet(ss) {
   // Blank cyan rows for PNs on demand but not in labor sheet
   [...allPns].filter(pn => !laborPns.has(pn)).sort().forEach(pn => {
     const desc = (DEMAND_DATA.find(r => r.pn === pn) || {}).desc || '';
-    ws.getRange(rowNum, 1).setValue(pn).setBackground(COLOR.CYAN).setFontWeight('bold').setFontColor('#003355');
-    ws.getRange(rowNum, 2).setValue(desc).setBackground(COLOR.CYAN).setFontColor('#003355');
-    ws.getRange(rowNum, 3, 1, headers.length - 2).setBackground(COLOR.CYAN);
+    ws.getRange(rowNum, 1).setBackground(COLOR.CYAN);  // On P&P? — leave blank until part is planned
+    ws.getRange(rowNum, 2).setValue(pn).setBackground(COLOR.CYAN).setFontWeight('bold').setFontColor('#003355');
+    ws.getRange(rowNum, 3).setValue(desc).setBackground(COLOR.CYAN).setFontColor('#003355');
+    ws.getRange(rowNum, 4, 1, headers.length - 3).setBackground(COLOR.CYAN);
     ws.setRowHeight(rowNum, 15);
     rowNum++;
   });
@@ -659,7 +673,7 @@ function buildChartsSheet(ss) {
     ['', '', '', '', '', ''],
     ['DEPT ORDER IN WEEKLY CAPACITY SHEET:', '', '', '', '', ''],
     ['Col B: LAM  |  Col C: DEPART  |  Col D: CNC TRIM  |  Col E: HAND-TRIM  |  Col F: PLOTTER', '', '', '', '', ''],
-    ['Col G: QA   |  Col H: ASY     |  Col I: PAINT     |  Col J: SHIP       |  Col K: PLANNING  |  Col L: KITTING', '', '', '', '', ''],
+    ['Col G: QA   |  Col H: KITTING |  Col I: ASY       |  Col J: PAINT      |  Col K: SHIP', '', '', '', '', ''],
   ];
 
   instructions.forEach((row, idx) => {
