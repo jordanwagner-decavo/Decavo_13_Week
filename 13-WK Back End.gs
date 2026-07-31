@@ -37,17 +37,17 @@ const FORECAST = {
 const MONTH_NAMES = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
 
 // ─── P&P (SO export from ERP) ────────────────────────────────────────────────
-// Doc No (SO#) col A, Part Number col E, Open Qty col G, Delivery/Due Date col I.
+// Doc No (SO#) col B, Part Number col F, Open Qty col H, Delivery/Due Date col J.
 // The tab is renamed "P&P MM.DD" (month.day of the update, no leading zeros)
 // each time it's refreshed, so the exact name is resolved at runtime rather than
 // hard-coded — see resolvePPSheet_().
 const PP = {
   SHEET_PREFIX: 'P&P',   // dated tab "P&P MM.DD" resolved via resolvePPSheet_()
   FIRST_ROW: 2,    // row 1 = headers
-  SO_COL:    1,    // A
-  PART_COL:  5,    // E
-  QTY_COL:   7,    // G  (Open Qty = demand)
-  DUE_COL:   9     // I  (Delivery / Due Date)
+  SO_COL:    2,    // B  (Doc No / SO#)
+  PART_COL:  6,    // F  (Number / DPN)
+  QTY_COL:   8,    // H  (Open Qty = demand)
+  DUE_COL:  10     // J  (Delivery / Due Date)
 };
 
 // Normalize any month label/date to a "YYYY-MM" key.
