@@ -78,8 +78,7 @@ function refreshCapacity() {
   const { weeklyHours, lamSchedule, allWeeks } = computeCapacity(laborMap, demand, bom);
   writeWeeklyCapacity(ss, weeklyHours, allWeeks);
   writeLamSchedule(ss, lamSchedule);
-  buildDemandSheet(ss, demand);       // rebuild Demand Detail from the live P&P tab
-  updateDemandStatus(ss, laborMap);   // then mark labor-data availability
+  buildDemandSheet(ss, demand, laborMap);   // rebuild Demand Detail (+ labor-data status) from live P&P
 
   if (allWeeks.length === 0) {
     const msg = 'Refreshed, but no weekly demand was produced.\n\n' +
@@ -224,6 +223,25 @@ function readParentChild(ss) {
 // quantities multiplied down each level. Returns a demand-shaped list
 // [{pn, desc, dueDate, qty}] aggregated by (pn, dueDate) across all P&P lines.
 function explodeDemand(demand, parentToChildren) {
+  // expand(pn): total required quantity of pn itself + every descendant, per ONE
+  // unit of pn. Memoized so a shared sub-assembly is expanded only once (a plain
+  // depth-first walk re-visits shared parts once per path and can blow up
+  // exponentially). 'computing' guards against circular BOM data.
+  const memo = {}, computing = {};
+  const expand = (pn) => {
+    if (memo[pn]) return memo[pn];
+    if (computing[pn]) return { [pn]: 1 };   // cycle: treat pn as a leaf
+    computing[pn] = true;
+    const res = { [pn]: 1 };
+    (parentToChildren[pn] || []).forEach(k => {
+      const sub = expand(k.child);
+      for (const d in sub) res[d] = (res[d] || 0) + sub[d] * k.qtyPer;
+    });
+    computing[pn] = false;
+    memo[pn] = res;
+    return res;
+  };
+
   const agg = {};   // 'pn|dueDate' -> {pn, desc, dueDate, qty}
   const add = (pn, dueDate, qty, desc) => {
     const key = pn + '|' + dueDate;
@@ -232,19 +250,9 @@ function explodeDemand(demand, parentToChildren) {
     if (desc) agg[key].desc = desc;   // prefer a real P&P description over blank
   };
 
-  // Depth-first accumulation with a per-path guard against circular BOM data.
-  const accumulate = (need, pn, mult, path) => {
-    need[pn] = (need[pn] || 0) + mult;
-    if (path[pn]) return;             // pn is already an ancestor on this path → stop
-    path[pn] = true;
-    (parentToChildren[pn] || []).forEach(k => accumulate(need, k.child, mult * k.qtyPer, path));
-    path[pn] = false;                 // backtrack so shared parts still count on sibling branches
-  };
-
   demand.forEach(row => {
-    const need = {};
-    accumulate(need, row.pn, row.qty, {});
-    Object.keys(need).forEach(pn => add(pn, row.dueDate, need[pn], pn === row.pn ? row.desc : ''));
+    const need = expand(row.pn);
+    for (const pn in need) add(pn, row.dueDate, need[pn] * row.qty, pn === row.pn ? row.desc : '');
   });
   return Object.keys(agg).map(k => agg[k]);
 }
@@ -467,29 +475,32 @@ function writeWeeklyCapacity(ss, weeklyHours, allWeeks) {
   });
   ws.setRowHeight(8, 18);
 
-  // Data rows starting row 9
+  // Data rows starting row 9 — built as arrays and written in bulk
+  // (per-cell getRange/setValue is far too slow once the BOM is exploded).
   const dataStartRow = 9;
-  allWeeks.forEach((wk, rowIdx) => {
-    const r = dataStartRow + rowIdx;
-    const isAlt = rowIdx % 2 === 0;
-    const rowBg = isAlt ? '#F0F4FF' : COLOR.WHITE;
-
-    ws.getRange(r, 1).setValue(wk).setBackground('#E8EAF6').setFontWeight('bold').setHorizontalAlignment('center');
-
-    DEPTS.forEach((dept, i) => {
-      const hrs = (weeklyHours[wk] && weeklyHours[wk][dept]) ? weeklyHours[wk][dept] : 0;
-      const cell = ws.getRange(r, i + 2);
-      cell.setValue(Math.round(hrs * 10) / 10).setNumberFormat('0.0').setHorizontalAlignment('center');
-
-      // Conditional: red if demand > capacity (compare to row 6)
-      if (hrs === 0) {
-        cell.setBackground(rowBg).setFontColor('#CCCCCC');
-      } else {
-        cell.setBackground(rowBg).setFontColor('#000000');
-      }
+  const W = allWeeks.length;
+  if (W > 0) {
+    const values = [], backgrounds = [], fontColors = [];
+    allWeeks.forEach((wk, rowIdx) => {
+      const rowBg = (rowIdx % 2 === 0) ? '#F0F4FF' : COLOR.WHITE;
+      const vRow = [wk], bRow = ['#E8EAF6'], fRow = ['#000000'];
+      DEPTS.forEach(dept => {
+        const hrs = (weeklyHours[wk] && weeklyHours[wk][dept]) ? weeklyHours[wk][dept] : 0;
+        vRow.push(Math.round(hrs * 10) / 10);
+        bRow.push(rowBg);
+        fRow.push(hrs === 0 ? '#CCCCCC' : '#000000');   // grey out zeros
+      });
+      values.push(vRow); backgrounds.push(bRow); fontColors.push(fRow);
     });
-    ws.setRowHeight(r, 15);
-  });
+    const dataRange = ws.getRange(dataStartRow, 1, W, totalCols);
+    dataRange.setValues(values);
+    dataRange.setBackgrounds(backgrounds);
+    dataRange.setFontColors(fontColors);
+    dataRange.setHorizontalAlignment('center');
+    ws.getRange(dataStartRow, 2, W, numDepts).setNumberFormat('0.0');
+    ws.getRange(dataStartRow, 1, W, 1).setFontWeight('bold');   // week column
+    ws.setRowHeights(dataStartRow, W, 15);
+  }
 
   // Totals row
   const totalRow = dataStartRow + allWeeks.length;
@@ -576,35 +587,42 @@ function writeLamSchedule(ss, lamSchedule) {
   const sorted = lamSchedule.slice().sort((a, b) => a.dueDate.localeCompare(b.dueDate));
   const today = new Date().toISOString().slice(0,10);
 
-  sorted.forEach((row, idx) => {
-    const r = idx + 4;
-    const isAlt = idx % 2 === 0;
-    const rowBg = isAlt ? '#F5F5F5' : COLOR.WHITE;
-
-    let status, statusBg, statusFg, rowHighlight;
-    if (!row.hasLaborData) {
-      status = '⚠ NO LABOR DATA'; statusBg = COLOR.CYAN; statusFg = '#003355'; rowHighlight = COLOR.CYAN;
-    } else if (row.lamStart < today && row.lamStart !== '?') {
-      status = '🔴 LAM START IN PAST'; statusBg = COLOR.RED; statusFg = COLOR.WHITE; rowHighlight = '#FFEBEE';
-    } else {
-      status = '✅ On track'; statusBg = '#00B050'; statusFg = COLOR.WHITE; rowHighlight = rowBg;
-    }
-
-    const vals = [
-      row.pn, row.desc, row.dueDate, row.qty, row.outsourceDays,
-      row.cyclesPerDay, row.upCount, row.partsPerWeek, row.lamWeeksNeeded,
-      row.lamStart, row.lamDeadline, row.finishWeek, status
-    ];
-
-    vals.forEach((v, i) => {
-      const cell = ws.getRange(r, i + 1);
-      cell.setValue(v).setBackground(rowHighlight).setFontSize(9);
-      if (i === 0) cell.setFontWeight('bold');
-      if (i === 12) { cell.setBackground(statusBg).setFontColor(statusFg).setFontWeight('bold'); }
-      cell.setHorizontalAlignment(i <= 1 ? 'left' : 'center');
+  const nCols = headers.length;
+  if (sorted.length > 0) {
+    const values = [], backgrounds = [], fontColors = [];
+    sorted.forEach((row, idx) => {
+      const rowBg = (idx % 2 === 0) ? '#F5F5F5' : COLOR.WHITE;
+      let status, statusBg, statusFg, rowHighlight;
+      if (!row.hasLaborData) {
+        status = '⚠ NO LABOR DATA'; statusBg = COLOR.CYAN; statusFg = '#003355'; rowHighlight = COLOR.CYAN;
+      } else if (row.lamStart < today && row.lamStart !== '?') {
+        status = '🔴 LAM START IN PAST'; statusBg = COLOR.RED; statusFg = COLOR.WHITE; rowHighlight = '#FFEBEE';
+      } else {
+        status = '✅ On track'; statusBg = '#00B050'; statusFg = COLOR.WHITE; rowHighlight = rowBg;
+      }
+      values.push([
+        row.pn, row.desc, row.dueDate, row.qty, row.outsourceDays,
+        row.cyclesPerDay, row.upCount, row.partsPerWeek, row.lamWeeksNeeded,
+        row.lamStart, row.lamDeadline, row.finishWeek, status
+      ]);
+      const bRow = [], fRow = [];
+      for (let i = 0; i < nCols; i++) {
+        bRow.push(i === nCols - 1 ? statusBg : rowHighlight);
+        fRow.push(i === nCols - 1 ? statusFg : '#000000');
+      }
+      backgrounds.push(bRow); fontColors.push(fRow);
     });
-    ws.setRowHeight(r, 15);
-  });
+    const dataRange = ws.getRange(4, 1, sorted.length, nCols);
+    dataRange.setValues(values);
+    dataRange.setBackgrounds(backgrounds);
+    dataRange.setFontColors(fontColors);
+    dataRange.setFontSize(9);
+    dataRange.setHorizontalAlignment('center');
+    ws.getRange(4, 1, sorted.length, 2).setHorizontalAlignment('left');   // Part Number + Description
+    ws.getRange(4, 1, sorted.length, 1).setFontWeight('bold');            // Part Number
+    ws.getRange(4, nCols, sorted.length, 1).setFontWeight('bold');        // Status
+    ws.setRowHeights(4, sorted.length, 15);
+  }
 
   ws.setFrozenRows(3);
 
@@ -613,35 +631,10 @@ function writeLamSchedule(ss, lamSchedule) {
   ws.getRange(3, 1, 1, headers.length).createFilter();
 }
 
-// ── UPDATE DEMAND STATUS ──────────────────────────────────────────
-
-function updateDemandStatus(ss, laborMap) {
-  const ws = ss.getSheetByName('📦 Demand Detail');
-  if (!ws) return;
-  const data = ws.getDataRange().getValues();
-  // Find header row
-  let hdrRow = -1;
-  for (let i = 0; i < data.length; i++) {
-    if (String(data[i][0]).trim() === 'Part Number') { hdrRow = i; break; }
-  }
-  if (hdrRow < 0) return;
-  const pnCol = 0, statusCol = data[hdrRow].findIndex(h => String(h).trim() === 'Status');
-  if (statusCol < 0) return;
-  for (let i = hdrRow + 1; i < data.length; i++) {
-    const pn = String(data[i][pnCol]).trim();
-    if (!pn) continue;
-    const hasLab = !!laborMap[pn];
-    ws.getRange(i + 1, statusCol + 1)
-      .setValue(hasLab ? '✅ Has Labor Data' : '⚠ MISSING LABOR DATA')
-      .setBackground(hasLab ? '#00B050' : '#00CCFF')
-      .setFontColor(hasLab ? COLOR.WHITE : '#003355')
-      .setFontWeight('bold');
-  }
-}
-
 // ── BUILD DEMAND SHEET ────────────────────────────────────────────
 
-function buildDemandSheet(ss, demand) {
+function buildDemandSheet(ss, demand, laborMap) {
+  laborMap = laborMap || {};
   let ws = ss.getSheetByName('📦 Demand Detail');
   if (ws) ws.clear();
   else ws = ss.insertSheet('📦 Demand Detail');
@@ -669,17 +662,26 @@ function buildDemandSheet(ss, demand) {
   ws.setRowHeight(3, 28);
 
   const sorted = demand.slice().sort((a,b) => a.dueDate.localeCompare(b.dueDate));
-  sorted.forEach((row, idx) => {
-    const r = idx + 4;
-    const isAlt = idx % 2 === 0;
-    const bg = isAlt ? '#F5F5F5' : COLOR.WHITE;
-    ws.getRange(r, 1).setValue(row.pn).setBackground(bg).setFontWeight('bold');
-    ws.getRange(r, 2).setValue(row.desc).setBackground(bg);
-    ws.getRange(r, 3).setValue(row.dueDate).setBackground(bg).setHorizontalAlignment('center');
-    ws.getRange(r, 4).setValue(row.qty).setBackground(bg).setHorizontalAlignment('center');
-    ws.getRange(r, 5).setValue('⏳ Run Refresh').setBackground('#E0E0E0').setHorizontalAlignment('center');
-    ws.setRowHeight(r, 14);
-  });
+  if (sorted.length > 0) {
+    const values = [], backgrounds = [], fontColors = [];
+    sorted.forEach((row, idx) => {
+      const bg = (idx % 2 === 0) ? '#F5F5F5' : COLOR.WHITE;
+      const hasLab = !!laborMap[row.pn];
+      values.push([row.pn, row.desc, row.dueDate, row.qty,
+                   hasLab ? '✅ Has Labor Data' : '⚠ MISSING LABOR DATA']);
+      backgrounds.push([bg, bg, bg, bg, hasLab ? '#00B050' : '#00CCFF']);
+      fontColors.push(['#000000','#000000','#000000','#000000', hasLab ? COLOR.WHITE : '#003355']);
+    });
+    const n = sorted.length;
+    const dataRange = ws.getRange(4, 1, n, headers.length);
+    dataRange.setValues(values);
+    dataRange.setBackgrounds(backgrounds);
+    dataRange.setFontColors(fontColors);
+    ws.getRange(4, 3, n, 3).setHorizontalAlignment('center');   // Due / Qty / Status
+    ws.getRange(4, 1, n, 1).setFontWeight('bold');              // Part Number
+    ws.getRange(4, 5, n, 1).setFontWeight('bold');              // Status
+    ws.setRowHeights(4, n, 14);
+  }
 
   ws.setFrozenRows(3);
   removeExistingFilter(ws);
