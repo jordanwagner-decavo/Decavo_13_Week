@@ -292,6 +292,9 @@ function submitBatch(groups) {
 
   groups.forEach(function (g) {
     var reason = (g.rationale || '').toString().trim();
+    // Link to the cell(s) this group actually edited (g.cells carries rowNum/col).
+    var cellsA1 = (g.cells || []).map(function (c) { return columnToLetter_(Number(c.col)) + Number(c.rowNum); }).filter(Boolean);
+    var cellVal = cellsA1.length ? cellLink_(sheet.getSheetId(), cellsA1[0], cellsA1.join(', ')) : '';
 
     if (g.kind === 'move') {
       var src = g.sources[0];
@@ -307,7 +310,7 @@ function submitBatch(groups) {
           src.so, src.partNo, descOf(dst.rowNum), unitPrice,
           movedQty, movedQty * unitPrice,
           src.weekDate, dst.weekDate, weeksMoved,
-          changeType, reason + noteSuffix, now, user
+          changeType, reason + noteSuffix, now, user, cellVal
         ]);
       });
 
@@ -319,7 +322,7 @@ function submitBatch(groups) {
         s0.so, s0.partNo, descOf(s0.rowNum), up,
         qty, qty * up,
         s0.weekDate, '', '',
-        'DECREASE', reason, now, user
+        'DECREASE', reason, now, user, cellVal
       ]);
 
     } else {
@@ -334,7 +337,7 @@ function submitBatch(groups) {
         (dlt > 0 ? '' : e.weekDate),
         (dlt > 0 ? e.weekDate : ''),
         '',
-        ct, reason, now, user
+        ct, reason, now, user, cellVal
       ]);
     }
   });
@@ -465,7 +468,8 @@ function logChangeWithRationale_(sheet, logSheet, row, col, oldQty, newQty, rati
       logSheet.getRange(lastRow, 1, 1, LOG_COLS).setValues([[
         so, partNo, description, unitPrice,
         movedQty, movedValue, origDate, newDate, weeksMoved,
-        changeType, mergedNotes, lastTime, user
+        changeType, mergedNotes, lastTime, user,
+        cellLink_(sheet.getSheetId(), columnToLetter_(col) + row, columnToLetter_(col) + row)
       ]]);
       return;
     }
@@ -484,6 +488,7 @@ function logChangeWithRationale_(sheet, logSheet, row, col, oldQty, newQty, rati
   logSheet.appendRow([
     so, partNo, description, unitPrice,
     movedQty, movedValue, origDate, newDate, '',
-    changeType, rationale, now, user
+    changeType, rationale, now, user,
+    cellLink_(sheet.getSheetId(), columnToLetter_(col) + row, columnToLetter_(col) + row)
   ]);
 }

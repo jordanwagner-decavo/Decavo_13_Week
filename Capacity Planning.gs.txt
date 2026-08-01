@@ -10,24 +10,25 @@
 //      then click Refresh to recompute weekly demand
 // ============================================================
 
-// ── EMBEDDED SOURCE DATA ─────────────────────────────────────────
-// Demand data from SAP B1 sales order export (P&P 6-18)
-// Update by replacing DEMAND_DATA with a fresh export, or edit
-// the Part Labor Data sheet and click Refresh.
-
-const DEMAND_DATA = [{"pn":"D50567","desc":"Outer Shell Bottom, STUAS, Pan 11EOIR2","dueDate":"2026-06-19","qty":10.0},{"pn":"D50567","desc":"Outer Shell Bottom, STUAS, Pan 11EOIR2","dueDate":"2026-07-03","qty":10.0},{"pn":"D50567","desc":"Outer Shell Bottom, STUAS, Pan 11EOIR2","dueDate":"2026-07-17","qty":10.0},{"pn":"D50567","desc":"Outer Shell Bottom, STUAS, Pan 11EOIR2","dueDate":"2026-07-31","qty":12.0},{"pn":"D50579","desc":"Pan Seal Cover, STUAS","dueDate":"2026-06-19","qty":6.0},{"pn":"D50579","desc":"Pan Seal Cover, STUAS","dueDate":"2026-07-03","qty":10.0},{"pn":"D50579","desc":"Pan Seal Cover, STUAS","dueDate":"2026-07-10","qty":6.0},{"pn":"D50579","desc":"Pan Seal Cover, STUAS","dueDate":"2026-07-24","qty":10.0},{"pn":"D50584","desc":"710-000335-000 Rev 02 Cover Assembly, Engine Board, Aft","dueDate":"2026-09-10","qty":6.0},{"pn":"D50769","desc":"GPS Bracket, Composite","dueDate":"2026-07-20","qty":5.0},{"pn":"D50769","desc":"GPS Bracket, Composite","dueDate":"2026-10-19","qty":22.0},{"pn":"D50863","desc":"FIRST ARTICLE PART - PFAIR DOCS AND APPROVAL REQUIRED - Cover, GPS Enclosure","dueDate":"2026-07-15","qty":5.0},{"pn":"D50883","desc":"Outer Shell Bottom, STUAS, Tilt 11EOIR1","dueDate":"2026-06-19","qty":9.0},{"pn":"D50883","desc":"Outer Shell Bottom, STUAS, Tilt 11EOIR1","dueDate":"2026-07-10","qty":10.0},{"pn":"D50883","desc":"Outer Shell Bottom, STUAS, Tilt 11EOIR1","dueDate":"2026-07-24","qty":10.0},{"pn":"D51159","desc":"BEZEL FRONT RECON V BLACK","dueDate":"2026-06-30","qty":16.0},{"pn":"D51159","desc":"BEZEL FRONT RECON V BLACK","dueDate":"2026-08-14","qty":11.0},{"pn":"D51159","desc":"BEZEL FRONT RECON V BLACK","dueDate":"2026-08-28","qty":30.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-07-03","qty":6.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-07-10","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-07-17","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-07-24","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-07-31","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-08-07","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-08-14","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-08-21","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-08-28","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-09-04","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-09-11","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-09-18","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-09-25","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-10-02","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-10-09","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-10-16","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-10-23","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-10-30","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-11-06","qty":5.0},{"pn":"D51423","desc":"Nose Fairing Forward Looking, Assembly","dueDate":"2026-11-13","qty":3.0},{"pn":"D51455","desc":"HOUSING CARBON FIBER, TEMPERED BLACK","dueDate":"2026-06-12","qty":13.0},{"pn":"D51455","desc":"HOUSING CARBON FIBER, TEMPERED BLACK","dueDate":"2026-07-02","qty":12.0},{"pn":"D51455","desc":"HOUSING CARBON FIBER, TEMPERED BLACK","dueDate":"2026-07-29","qty":25.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-08-21","qty":16.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-08-28","qty":15.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-09-04","qty":15.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-09-11","qty":15.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-09-18","qty":15.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-09-25","qty":15.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-10-02","qty":15.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-10-09","qty":15.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-10-16","qty":15.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-10-23","qty":15.0},{"pn":"D51457","desc":"Side Fairing 09, Assembly","dueDate":"2026-10-30","qty":15.0},{"pn":"D51831","desc":"ViDAR Nose","dueDate":"2026-06-26","qty":2.0},{"pn":"D52327","desc":"MODULE SLICE ASSEMBLY \u00ad ENGINE STRUCTURE, HFE\u00adEFI, BLOCK 3","dueDate":"2026-06-30","qty":10.0},{"pn":"D52378","desc":"Plate Mounting Assembly, GPS Enclosure - Dual Feed, PRIME#: AQ-V DCS UAE CLS FUS","dueDate":"2026-07-08","qty":23.0},{"pn":"D52669","desc":"Cover Assembly - Engine Board, Forward, 710-005127-000 REV 00 GEN 7","dueDate":"2026-09-10","qty":5.0},{"pn":"D52669","desc":"Cover Assembly - Engine Board, Forward, 710-005127-000 REV 00 GEN 7","dueDate":"2026-09-24","qty":5.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-06-26","qty":38.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-07-10","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-07-24","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-08-07","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-08-21","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-09-04","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-09-18","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-10-02","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-10-16","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06 EOIR","dueDate":"2026-10-30","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06 EOIR","dueDate":"2026-11-13","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-11-27","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, 06EOIR","dueDate":"2026-12-11","qty":30.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, AC CLT, EOMWIR","dueDate":"2026-12-18","qty":50.0},{"pn":"D53274","desc":"Glassed LAT Coil Assembly, AC CLT, EOMWIR","dueDate":"2026-12-31","qty":50.0},{"pn":"D53346","desc":"06EOIR LD, Front Cover, Assembly","dueDate":"2026-06-26","qty":5.0},{"pn":"D53695","desc":"Hood Tech, 05, Digital LAT Rotor Assembly, Glassed","dueDate":"2026-07-15","qty":8.0},{"pn":"D53789","desc":"ScanEagle SLICE WITH HEATSINKS","dueDate":"2026-06-26","qty":3.0},{"pn":"D54038","desc":"Access Panel Assembly, Propulsion Module Slice, 710-000023 REV 01A","dueDate":"2026-08-27","qty":5.0},{"pn":"D54038","desc":"Access Panel Assembly, Propulsion Module Slice, 710-000023 REV 01A","dueDate":"2026-09-17","qty":5.0},{"pn":"D54038","desc":"Access Panel Assembly, Propulsion Module Slice, 710-000023 REV 01A","dueDate":"2026-10-01","qty":5.0},{"pn":"D54039","desc":"COWLING ASY, UPPER, BLOCK 3, 710-000373 REV 02","dueDate":"2026-08-28","qty":1.0},{"pn":"D54039","desc":"COWLING ASSEMBLY - ENGINE, BLOCK 3, UPPER","dueDate":"2026-08-31","qty":7.0},{"pn":"D54039","desc":"COWLING ASY, UPPER, BLOCK 3, 710-000373 REV 02","dueDate":"2026-09-04","qty":5.0},{"pn":"D54039","desc":"COWLING ASY, UPPER, BLOCK 3, 710-000373 REV 02","dueDate":"2026-09-11","qty":5.0},{"pn":"D54039","desc":"COWLING ASY, UPPER, BLOCK 3, 710-000373 REV 02","dueDate":"2026-09-18","qty":5.0},{"pn":"D54039","desc":"COWLING ASY, UPPER, BLOCK 3, 710-000373 REV 02","dueDate":"2026-09-25","qty":5.0},{"pn":"D54039","desc":"COWLING ASY, UPPER, BLOCK 3, 710-000373 REV 02","dueDate":"2026-10-02","qty":5.0},{"pn":"D54039","desc":"COWLING ASY, UPPER, BLOCK 3, 710-000373 REV 02","dueDate":"2026-10-09","qty":5.0},{"pn":"D54039","desc":"COWLING ASY, UPPER, BLOCK 3, 710-000373 REV 02","dueDate":"2026-10-16","qty":5.0},{"pn":"D54039","desc":"COWLING ASY, UPPER, BLOCK 3, 710-000373 REV 02","dueDate":"2026-10-23","qty":5.0},{"pn":"D54040","desc":"COWLING ASSEMBLY - ENGINE, BLOCK 3, LOWER","dueDate":"2026-08-31","qty":7.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-09-04","qty":3.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-09-11","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-09-18","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-09-25","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-10-02","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-10-09","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-10-16","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-10-23","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-10-30","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-11-06","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-11-13","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-11-20","qty":5.0},{"pn":"D54040","desc":"COWLING ASY, LOWER, BLOCK 3, 710-000373-001 REV 02","dueDate":"2026-12-04","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-08-28","qty":4.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-09-04","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-09-11","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-09-18","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-09-25","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-10-02","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-10-09","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-10-16","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-10-23","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-10-30","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-11-06","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-11-13","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-11-20","qty":5.0},{"pn":"D54043","desc":"Fairing Assembly, Upper, Block 3, 710-000372-000 REV 02","dueDate":"2026-12-04","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-08-21","qty":2.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-08-28","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-09-04","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-09-11","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-09-18","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-09-25","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-10-02","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-10-09","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-10-16","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-10-23","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-10-30","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-11-06","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-11-13","qty":5.0},{"pn":"D54044","desc":"Fairing Assembly, Lower -001, Block 3 - 710-000372-001 REV 02","dueDate":"2026-11-20","qty":5.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-06-12","qty":3.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-06-19","qty":5.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-06-26","qty":5.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-07-10","qty":5.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-07-24","qty":5.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-08-07","qty":5.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-08-21","qty":5.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-09-04","qty":5.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-09-18","qty":5.0},{"pn":"D54045","desc":"Module Asy, Slice, Composite Structure, Propulsion, Block 3, 530-000392-000 REV ","dueDate":"2026-10-02","qty":5.0},{"pn":"D54118","desc":"06EOIR-LP/LA Front Face","dueDate":"2026-06-19","qty":1.0},{"pn":"D54118","desc":"06EOIR-LP/LA Front Face","dueDate":"2026-06-26","qty":10.0},{"pn":"D54118","desc":"06EOIR-LP/LA Front Face","dueDate":"2026-07-10","qty":5.0},{"pn":"D54118","desc":"06EOIR-LP/LA Front Face","dueDate":"2026-07-17","qty":10.0},{"pn":"D54118","desc":"06EOIR-LP/LA Front Face","dueDate":"2026-07-31","qty":5.0},{"pn":"D54644","desc":"Carbon-Pan Cover Non-Drive Assembly, Roll Over Tilt, 06-H","dueDate":"2026-06-19","qty":5.0},{"pn":"D54644","desc":"Carbon-Pan Cover Non-Drive Assembly, Roll Over Tilt, 06-H","dueDate":"2026-07-03","qty":5.0},{"pn":"D54644","desc":"Carbon-Pan Cover Non-Drive Assembly, Roll Over Tilt, 06-H","dueDate":"2026-07-17","qty":5.0},{"pn":"D54644","desc":"Carbon-Pan Cover Non-Drive Assembly, Roll Over Tilt, 06-H","dueDate":"2026-07-31","qty":5.0},{"pn":"D54644","desc":"Carbon-Pan Cover Non-Drive Assembly, Roll Over Tilt, 06-H","dueDate":"2026-08-14","qty":4.0},{"pn":"D54703","desc":"GLASSED LAT COIL ASSEMBLY, 11EOIR6","dueDate":"2026-06-19","qty":6.0},{"pn":"D54703","desc":"GLASSED LAT COIL ASSEMBLY, 11EOIR6","dueDate":"2026-07-10","qty":32.0},{"pn":"D54703","desc":"GLASSED LAT COIL ASSEMBLY, 11EOIR6","dueDate":"2026-07-31","qty":40.0},{"pn":"D54713","desc":"Front Cover Carbon Assembly, 11EOIR6","dueDate":"2026-06-19","qty":7.0},{"pn":"D54713","desc":"Front Cover Carbon Assembly, 11EOIR6","dueDate":"2026-06-26","qty":3.0},{"pn":"D54713","desc":"Front Cover Carbon Assembly, 11EOIR6","dueDate":"2026-07-02","qty":9.0},{"pn":"D54713","desc":"Front Cover Carbon Assembly, 11EOIR6","dueDate":"2026-07-17","qty":10.0},{"pn":"D54713","desc":"Front Cover Carbon Assembly, 11EOIR6","dueDate":"2026-07-31","qty":10.0},{"pn":"D54713","desc":"Front Cover Carbon Assembly, 11EOIR6","dueDate":"2026-08-07","qty":4.0},{"pn":"D54714","desc":"Lens Frame, Multi Lens, 11EOIR6","dueDate":"2026-06-19","qty":8.0},{"pn":"D54714","desc":"Lens Frame, Multi Lens, 11EOIR6","dueDate":"2026-07-03","qty":7.0},{"pn":"D54735","desc":"Assembly, Laser Cover, 11EOIR6","dueDate":"2026-06-26","qty":7.0},{"pn":"D54735","desc":"Assembly, Laser Cover, 11EOIR6","dueDate":"2026-07-10","qty":10.0},{"pn":"D54735","desc":"Assembly, Laser Cover, 11EOIR6","dueDate":"2026-07-24","qty":10.0},{"pn":"D54735","desc":"Assembly, Laser Cover, 11EOIR6","dueDate":"2026-08-07","qty":10.0},{"pn":"D54735","desc":"Assembly, Laser Cover, 11EOIR6","dueDate":"2026-08-14","qty":3.0},{"pn":"D54818","desc":"T FOR C: DISPLAY DRIVER HOUSING, BOTTOM","dueDate":"2026-12-31","qty":13.0},{"pn":"D54819","desc":"DDA Housing Top, Assembly","dueDate":"2026-07-17","qty":1.0},{"pn":"D54819","desc":"T FOR C: DDA Housing Top, Assembly","dueDate":"2026-12-31","qty":12.0},{"pn":"D54820","desc":"DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-06-12","qty":1.0},{"pn":"D54820","desc":"DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-06-19","qty":2.0},{"pn":"D54820","desc":"DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-06-26","qty":2.0},{"pn":"D54820","desc":"DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-07-03","qty":2.0},{"pn":"D54820","desc":"DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-07-10","qty":2.0},{"pn":"D54820","desc":"FIRST ARTICLE DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-07-30","qty":50.0},{"pn":"D54820","desc":"DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-09-30","qty":10.0},{"pn":"D54820","desc":"DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-10-30","qty":12.0},{"pn":"D54820","desc":"DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-11-30","qty":6.0},{"pn":"D54820","desc":"QTY=0; CONSOLIDATE INTO LINES 10-100; DSS Assembly, (DISPLAY SUPPORT STRUCTURE)","dueDate":"2026-12-31","qty":25.0},{"pn":"D54884-02","desc":"NSP3A Fairing, Paint P2 FS 36375","dueDate":"2026-07-10","qty":9.0},{"pn":"D54884-02","desc":"NSP3A Fairing, Paint P2 FS 36375","dueDate":"2026-07-17","qty":7.0},{"pn":"D54884-02","desc":"NSP3A Fairing, Paint P2 FS 36375","dueDate":"2026-07-24","qty":6.0},{"pn":"D54884-02","desc":"NSP3A Fairing, Paint P2 FS 36375","dueDate":"2026-07-31","qty":5.0},{"pn":"D54884-02","desc":"NSP3A Fairing, Paint P2 FS 36375","dueDate":"2026-08-07","qty":5.0},{"pn":"D54884-02","desc":"NSP3A Fairing, Paint P2 FS 36375","dueDate":"2026-08-14","qty":6.0},{"pn":"D54887","desc":"OUTER SHELL TOP ASSEMBLY, 11EOIR6","dueDate":"2026-06-19","qty":10.0},{"pn":"D54887","desc":"OUTER SHELL TOP ASSEMBLY, 11EOIR6","dueDate":"2026-06-26","qty":6.0},{"pn":"D54887","desc":"OUTER SHELL TOP ASSEMBLY, 11EOIR6","dueDate":"2026-07-02","qty":10.0},{"pn":"D54887","desc":"OUTER SHELL TOP ASSEMBLY, 11EOIR6","dueDate":"2026-07-17","qty":10.0},{"pn":"D54887","desc":"OUTER SHELL TOP ASSEMBLY, 11EOIR6","dueDate":"2026-07-31","qty":10.0},{"pn":"D54887","desc":"OUTER SHELL TOP ASSEMBLY, 11EOIR6","dueDate":"2026-08-14","qty":10.0},{"pn":"D54887","desc":"OUTER SHELL TOP ASSEMBLY, 11EOIR6","dueDate":"2026-08-28","qty":10.0},{"pn":"D54888","desc":"Rear Ball Cover, 11EOIR6","dueDate":"2026-06-19","qty":10.0},{"pn":"D54888","desc":"Rear Ball Cover, 11EOIR6","dueDate":"2026-06-26","qty":10.0},{"pn":"D54888","desc":"Rear Ball Cover, 11EOIR6","dueDate":"2026-07-10","qty":10.0},{"pn":"D54888","desc":"Rear Ball Cover, 11EOIR6","dueDate":"2026-07-24","qty":10.0},{"pn":"D54888","desc":"Rear Ball Cover, 11EOIR6","dueDate":"2026-08-07","qty":10.0},{"pn":"D55008-00","desc":"Bulkhead, Aircraft-Nose Module Aft (Coated)","dueDate":"2026-07-30","qty":10.0},{"pn":"D55035","desc":"Window, Retainer, Assembly, 06EOIR3, A-2","dueDate":"2026-07-31","qty":10.0},{"pn":"D55040","desc":"AVIONICS BULKHEAD","dueDate":"2026-06-19","qty":12.0},{"pn":"D55041","desc":"Aerovel, Hatch, Lower Payload","dueDate":"2026-06-19","qty":3.0},{"pn":"D55075","desc":"Engine Slice Structure GCU, 710-000381-000 REV 01","dueDate":"2026-06-19","qty":3.0},{"pn":"D55075","desc":"Engine Slice Structure GCU, 710-000381-000 REV 01","dueDate":"2026-06-26","qty":5.0},{"pn":"D55075","desc":"Engine Slice Structure GCU, 710-000381-000 REV 01","dueDate":"2026-07-03","qty":5.0},{"pn":"D55075","desc":"Engine Slice Structure GCU, 710-000381-000 REV 01","dueDate":"2026-07-17","qty":5.0},{"pn":"D55075","desc":"Engine Slice Structure GCU, 710-000381-000 REV 01","dueDate":"2026-07-31","qty":6.0},{"pn":"D55118","desc":"Carbon Housing, 12S8P","dueDate":"2026-06-19","qty":50.0},{"pn":"D55118","desc":"Carbon Housing, 12S8P","dueDate":"2026-06-26","qty":70.0},{"pn":"D55118","desc":"Carbon Housing, 12S8P","dueDate":"2026-07-03","qty":70.0},{"pn":"D55118","desc":"Carbon Housing, 12S8P","dueDate":"2026-07-10","qty":24.0},{"pn":"D55146","desc":"Central Avionics Fuselage","dueDate":"2026-06-19","qty":5.0},{"pn":"D55146","desc":"Central Avionics Fuselage","dueDate":"2026-06-26","qty":5.0},{"pn":"D55146","desc":"Central Avionics Fuselage","dueDate":"2026-07-03","qty":4.0},{"pn":"D55208","desc":"Flat Carbon Leg, Long","dueDate":"2026-06-19","qty":48.0},{"pn":"D55208","desc":"Flat Carbon Leg, Long","dueDate":"2026-06-24","qty":21.0},{"pn":"D55208","desc":"Flat Carbon Leg, Long","dueDate":"2026-07-02","qty":138.0},{"pn":"D55208","desc":"Flat Carbon Leg, Long","dueDate":"2026-07-24","qty":192.0},{"pn":"D55208","desc":"Flat Carbon Leg, Long","dueDate":"2026-08-14","qty":248.0},{"pn":"D55208","desc":"Flat Carbon Leg, Long","dueDate":"2026-09-04","qty":196.0},{"pn":"D55208","desc":"Flat Carbon Leg, Long","dueDate":"2026-09-29","qty":188.0},{"pn":"D55265","desc":"Bondment, Tail Boom with Mount","dueDate":"2026-05-22","qty":5.0},{"pn":"D55318","desc":"Mid IPD ASY, Mounting Structure with Inserts (EMI Coated)","dueDate":"2026-07-17","qty":14.0},{"pn":"D55349","desc":"QA Inspection Gauge, Carbon Housing 12S8P","dueDate":"2025-12-10","qty":1.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-06-19","qty":3.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-06-26","qty":4.0},{"pn":"D55366","desc":"LEG BASE - FAIR PART","dueDate":"2026-07-03","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-07-10","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-07-17","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-07-24","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-07-31","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-08-07","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-08-14","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-08-21","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-08-28","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-09-04","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-09-11","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-09-18","qty":4.0},{"pn":"D55366","desc":"LEG BASE","dueDate":"2026-09-25","qty":8.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-10-02","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-10-09","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-10-16","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-10-23","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-10-30","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-11-06","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-11-13","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-11-20","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-12-04","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-12-11","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-12-18","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2026-12-31","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2027-01-08","qty":4.0},{"pn":"D55366","desc":"Aerovel, Leg Base, Structure","dueDate":"2027-01-15","qty":4.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-06-19","qty":5.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-06-26","qty":5.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-07-03","qty":5.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-07-10","qty":5.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-07-17","qty":5.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-07-24","qty":4.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-07-31","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-08-14","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-08-28","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-09-11","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-09-25","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-10-02","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-10-16","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-10-30","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-11-13","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-11-25","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-12-11","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2026-12-23","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2027-01-08","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2027-01-22","qty":10.0},{"pn":"D55367","desc":"ENGINE CRADLE CARBON, STRAIGHT PIPE","dueDate":"2027-02-05","qty":10.0},{"pn":"D55368","desc":"FUEL TANK SKIN","dueDate":"2026-06-26","qty":3.0},{"pn":"D55369","desc":"HEAVY PAYLOAD BULKHEAD","dueDate":"2026-07-10","qty":9.0},{"pn":"D55369","desc":"HEAVY PAYLOAD BULKHEAD","dueDate":"2026-07-24","qty":10.0},{"pn":"D55369","desc":"HEAVY PAYLOAD BULKHEAD","dueDate":"2026-08-07","qty":10.0},{"pn":"D55372","desc":"PROD HOLD PER CUSTOMER 5/20 - REAR BULKHEAD WITH HEADER TANK","dueDate":"2026-07-17","qty":6.0},{"pn":"D55372","desc":"PROD HOLD PER CUSTOMER 5/20 - REAR BULKHEAD WITH HEADER TANK","dueDate":"2026-07-31","qty":5.0},{"pn":"D55372","desc":"PROD HOLD PER CUSTOMER 5/20 - REAR BULKHEAD WITH HEADER TANK","dueDate":"2026-08-07","qty":5.0},{"pn":"D55372","desc":"PROD HOLD PER CUSTOMER 5/20 - REAR BULKHEAD WITH HEADER TANK","dueDate":"2026-08-14","qty":5.0},{"pn":"D55372","desc":"PROD HOLD PER CUSTOMER 5/20 - REAR BULKHEAD WITH HEADER TANK","dueDate":"2026-08-21","qty":5.0},{"pn":"D55372","desc":"PROD HOLD PER CUSTOMER 5/20 - REAR BULKHEAD WITH HEADER TANK","dueDate":"2026-08-28","qty":5.0},{"pn":"D55372","desc":"PROD HOLD PER CUSTOMER 5/20 - REAR BULKHEAD WITH HEADER TANK","dueDate":"2026-09-04","qty":5.0},{"pn":"D55517","desc":"WIDE IPD composite main structure with insert, No EMI, Std material","dueDate":"2026-06-26","qty":4.0},{"pn":"D55518","desc":"NARROW IPD main structure with insert, No EMI, Std material","dueDate":"2026-06-26","qty":4.0},{"pn":"D55521","desc":"Right Side Top Cover Assembly, With EMI, FR/LT material","dueDate":"2026-07-17","qty":13.0},{"pn":"D55522","desc":"Right Side Front Cover Assembly, With EMI, FR/LT material","dueDate":"2026-07-17","qty":8.0},{"pn":"D55524","desc":"WIDE IPD composite main structure with insert, With EMI, FR/LT material, QUAL (6","dueDate":"2026-07-17","qty":3.0},{"pn":"D55525","desc":"NARROW IPD main structure with insert, With EMI, FR/LT material","dueDate":"2026-07-17","qty":3.0},{"pn":"D55542","desc":"VERTICAL TAIL FAIRING, LH","dueDate":"2026-02-27","qty":8.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-06-19","qty":6.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-06-26","qty":6.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-07-03","qty":5.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-07-10","qty":5.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-07-17","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-07-31","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-08-14","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-08-28","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-09-11","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-09-25","qty":12.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-10-09","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-10-23","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-11-06","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-11-20","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-12-04","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-12-18","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2026-12-31","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-01-15","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-01-29","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-02-12","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-02-26","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-03-12","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-03-26","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-04-09","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-04-23","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-05-07","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-05-21","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-06-04","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-06-18","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-07-02","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-07-16","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-07-30","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-08-13","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-08-27","qty":10.0},{"pn":"D55546","desc":"LEG","dueDate":"2027-09-10","qty":10.0},{"pn":"D55580","desc":"*EXPEDITE* MOUNTING PLATE, RIGID, 4 DEG WITH CERAKOTE BATTLESHIP GREY H-213","dueDate":"2026-06-26","qty":45.0},{"pn":"D55580","desc":"MOUNTING PLATE, RIGID, 4 DEG (Coated)","dueDate":"2026-08-07","qty":88.0},{"pn":"D55627","desc":"Mid IPD, Mounting Structure with Inserts (uncoated)","dueDate":"2026-06-26","qty":5.0},{"pn":"D55648","desc":"Fuselage Top Hatch, PathfinderX NO. 23","dueDate":"2026-06-19","qty":1.0},{"pn":"D55648","desc":"Fuselage Top Hatch, PathfinderX NO. 24","dueDate":"2026-06-26","qty":1.0},{"pn":"D55648","desc":"Fuselage Top Hatch, PathfinderX NO. 25","dueDate":"2026-07-03","qty":2.0},{"pn":"D55648","desc":"Fuselage Top Hatch, PathfinderX NO. 27","dueDate":"2026-07-10","qty":2.0},{"pn":"D55648","desc":"Fuselage Top Hatch, PathfinderX NO. 29","dueDate":"2026-07-17","qty":2.0},{"pn":"D55711","desc":"Fuselage Assembly, PathfinderX NO. 19","dueDate":"2026-06-12","qty":1.0},{"pn":"D55711","desc":"Fuselage Assembly, PathfinderX NO. 20","dueDate":"2026-06-19","qty":2.0},{"pn":"D55711","desc":"Fuselage Assembly, PathfinderX NO. 22","dueDate":"2026-06-26","qty":1.0},{"pn":"D55711","desc":"Fuselage Assembly, PathfinderX NO. 23","dueDate":"2026-07-03","qty":2.0},{"pn":"D55711","desc":"Fuselage Assembly, PathfinderX NO. 25","dueDate":"2026-07-10","qty":2.0},{"pn":"D55711","desc":"Fuselage Assembly, PathfinderX NO. 27","dueDate":"2026-07-17","qty":2.0},{"pn":"D55711","desc":"Fuselage Assembly, PathfinderX NO. 29","dueDate":"2026-07-24","qty":2.0},{"pn":"D55712","desc":"Empennage Assembly, PathfinderX NO. 19","dueDate":"2026-06-12","qty":1.0},{"pn":"D55712","desc":"Empennage Assembly, PathfinderX NO. 20","dueDate":"2026-06-19","qty":2.0},{"pn":"D55712","desc":"Empennage Assembly, PathfinderX NO. 22","dueDate":"2026-06-26","qty":1.0},{"pn":"D55712","desc":"Empennage Assembly, PathfinderX NO. 23","dueDate":"2026-07-03","qty":2.0},{"pn":"D55712","desc":"Empennage Assembly, PathfinderX NO. 25","dueDate":"2026-07-10","qty":2.0},{"pn":"D55712","desc":"Empennage Assembly, PathfinderX NO. 27","dueDate":"2026-07-17","qty":2.0},{"pn":"D55712","desc":"Empennage Assembly, PathfinderX NO. 29","dueDate":"2026-07-24","qty":2.0},{"pn":"D55713","desc":"Left Wing Assembly, PathfinderX NO. 20","dueDate":"2026-06-12","qty":2.0},{"pn":"D55713","desc":"Left Wing Assembly, PathfinderX NO. 22","dueDate":"2026-06-19","qty":2.0},{"pn":"D55713","desc":"Left Wing Assembly, PathfinderX NO. 24","dueDate":"2026-06-26","qty":1.0},{"pn":"D55713","desc":"Left Wing Assembly, PathfinderX NO. 25","dueDate":"2026-07-03","qty":2.0},{"pn":"D55713","desc":"Left Wing Assembly, PathfinderX NO. 27","dueDate":"2026-07-10","qty":2.0},{"pn":"D55713","desc":"Left Wing Assembly, PathfinderX NO. 29","dueDate":"2026-07-17","qty":2.0},{"pn":"D55714","desc":"Right Wing Assembly, PathfinderX NO. 20","dueDate":"2026-06-12","qty":1.0},{"pn":"D55714","desc":"Right Wing Assembly, PathfinderX NO. 21","dueDate":"2026-06-19","qty":2.0},{"pn":"D55714","desc":"Right Wing Assembly, PathfinderX NO. 23","dueDate":"2026-06-26","qty":1.0},{"pn":"D55714","desc":"Right Wing Assembly, PathfinderX NO. 24","dueDate":"2026-07-03","qty":2.0},{"pn":"D55714","desc":"Right Wing Assembly, PathfinderX NO. 26","dueDate":"2026-07-10","qty":2.0},{"pn":"D55714","desc":"Right Wing Assembly, PathfinderX NO. 28","dueDate":"2026-07-17","qty":2.0},{"pn":"D55714","desc":"Right Wing Assembly, PathfinderX NO. 30","dueDate":"2026-07-24","qty":1.0},{"pn":"D55715","desc":"Nose Fairing Assembly, PathfinderX NO. 19","dueDate":"2026-06-12","qty":1.0},{"pn":"D55715","desc":"Nose Fairing Assembly, PathfinderX NO. 20","dueDate":"2026-06-19","qty":2.0},{"pn":"D55715","desc":"Nose Fairing Assembly, PathfinderX NO. 22","dueDate":"2026-06-26","qty":1.0},{"pn":"D55715","desc":"Nose Fairing Assembly, PathfinderX NO. 23","dueDate":"2026-07-03","qty":2.0},{"pn":"D55715","desc":"Nose Fairing Assembly, PathfinderX NO. 25","dueDate":"2026-07-10","qty":2.0},{"pn":"D55715","desc":"Nose Fairing Assembly, PathfinderX NO. 27","dueDate":"2026-07-17","qty":2.0},{"pn":"D55715","desc":"Nose Fairing Assembly, PathfinderX NO. 29","dueDate":"2026-07-24","qty":2.0},{"pn":"D55733","desc":"FUEL TANK RETAINER","dueDate":"2026-10-30","qty":40.0},{"pn":"D55734","desc":"VENT TUBE MOUNT","dueDate":"2026-10-30","qty":40.0},{"pn":"D55750","desc":"FULL VISOR FRAME, FRONT - AS9102 FULL FAIR","dueDate":"2026-08-06","qty":51.0},{"pn":"D55751","desc":"FRAME, VISOR, REAR AS9102 FULL FAIR","dueDate":"2026-08-06","qty":51.0},{"pn":"D55761","desc":"ScanEagle V1 SLICE WITH HEATSINKS","dueDate":"2026-06-19","qty":2.0},{"pn":"D55816","desc":"COVER ASSEMBLY, 2 SENSOR USV POD","dueDate":"2026-06-19","qty":1.0},{"pn":"D55817","desc":"Assembly, Front Cover, 11EOIR7","dueDate":"2026-06-26","qty":9.0},{"pn":"D55817","desc":"Assembly, Front Cover, 11EOIR7","dueDate":"2026-07-10","qty":10.0},{"pn":"D55829","desc":"Window Retainer, Laser Window, 11EOIR7","dueDate":"2026-06-19","qty":17.0},{"pn":"D55833","desc":"Window Retainer, Multi Window, 11EOIR7","dueDate":"2026-06-19","qty":4.0},{"pn":"D55833","desc":"Window Retainer, Multi Window, 11EOIR7","dueDate":"2026-06-26","qty":5.0},{"pn":"D55833","desc":"Window Retainer, Multi Window, 11EOIR7","dueDate":"2026-07-03","qty":5.0},{"pn":"D55833","desc":"Window Retainer, Multi Window, 11EOIR7","dueDate":"2026-07-10","qty":5.0},{"pn":"D55840","desc":"ENVIRONMENTAL ENCLOSURE","dueDate":"2026-05-29","qty":1.0},{"pn":"D55840","desc":"ENVIRONMENTAL ENCLOSURE","dueDate":"2026-06-19","qty":1.0},{"pn":"D55841","desc":"ENVIRONMENTAL ENCLOSURE ESA SIDE","dueDate":"2026-05-29","qty":1.0},{"pn":"D55841","desc":"ENVIRONMENTAL ENCLOSURE ESA SIDE","dueDate":"2026-07-03","qty":1.0},{"pn":"D55854","desc":"LASER COVER, 11EOIR7","dueDate":"2026-07-10","qty":20.0},{"pn":"D55862","desc":"CARBON 06 DL LID","dueDate":"2026-06-19","qty":12.0},{"pn":"D55862","desc":"CARBON 06 DL LID","dueDate":"2026-06-26","qty":12.0},{"pn":"D55862","desc":"CARBON 06 DL LID","dueDate":"2026-07-03","qty":12.0},{"pn":"D55862","desc":"CARBON 06 DL LID","dueDate":"2026-07-10","qty":12.0},{"pn":"D55862","desc":"CARBON 06 DL LID","dueDate":"2026-07-17","qty":12.0},{"pn":"D55862","desc":"CARBON 06 DL LID","dueDate":"2026-07-24","qty":12.0},{"pn":"D55862","desc":"CARBON 06 DL LID","dueDate":"2026-07-31","qty":10.0},{"pn":"D55867","desc":"RADOME, SRC8430A, GREEN","dueDate":"2026-05-29","qty":2.0},{"pn":"D55867","desc":"RADOME, SRC8430A, GREEN","dueDate":"2026-06-19","qty":13.0},{"pn":"D55897","desc":"GHOST-X2 CARBON HOUSING","dueDate":"2026-06-19","qty":4.0},{"pn":"D55897","desc":"GHOST-X2 CARBON HOUSING","dueDate":"2026-06-26","qty":5.0},{"pn":"D55897","desc":"GHOST-X2 CARBON HOUSING","dueDate":"2026-07-10","qty":5.0},{"pn":"D55897","desc":"GHOST-X2 CARBON HOUSING","dueDate":"2026-07-17","qty":5.0},{"pn":"D55897","desc":"GHOST-X2 CARBON HOUSING","dueDate":"2026-07-24","qty":5.0},{"pn":"D55897","desc":"GHOST-X2 CARBON HOUSING","dueDate":"2026-08-07","qty":1.0},{"pn":"D55916","desc":"COVER, MAIN, PDX (Coated) FA PART AND FAIR","dueDate":"2026-07-21","qty":1.0},{"pn":"D55916","desc":"COVER, MAIN, PDX (Coated)","dueDate":"2026-07-31","qty":47.0},{"pn":"D55916","desc":"COVER, MAIN, PDX (Coated)","dueDate":"2026-09-10","qty":6.0},{"pn":"D55917","desc":"COVER, HEAT SHIELD / FAIR & FIRST ARTICLE PART","dueDate":"2026-06-18","qty":1.0},{"pn":"D55917","desc":"COVER, HEAT SHIELD","dueDate":"2026-06-30","qty":29.0},{"pn":"D55917","desc":"COVER, HEAT SHIELD","dueDate":"2026-07-22","qty":24.0},{"pn":"D55935","desc":"RADOME, EXTERNAL","dueDate":"2026-06-01","qty":3.0},{"pn":"D55935","desc":"RADOME, EXTERNAL","dueDate":"2026-06-15","qty":12.0},{"pn":"D55935","desc":"RADOME, EXTERNAL","dueDate":"2026-07-27","qty":3.0},{"pn":"D55980","desc":"5800-0016-02-B, Flightwave, Overwatch, Stage 2","dueDate":"2026-06-19","qty":1.0},{"pn":"D55980","desc":"5800-0016-02-B, Flightwave, Overwatch, Stage 2","dueDate":"2026-06-24","qty":29.0},{"pn":"D55980","desc":"5800-0016-02-B, Flightwave, Overwatch, Stage 2","dueDate":"2026-07-01","qty":30.0},{"pn":"D55980","desc":"5800-0016-02-B, Flightwave, Overwatch, Stage 2","dueDate":"2026-07-08","qty":30.0},{"pn":"D55980","desc":"5800-0016-02-B, Flightwave, Overwatch, Stage 2","dueDate":"2026-07-15","qty":30.0},{"pn":"D55980","desc":"5800-0016-02-B, Flightwave, Overwatch, Stage 2","dueDate":"2026-07-22","qty":30.0},{"pn":"D55980","desc":"5800-0016-02-B, Flightwave, Overwatch, Stage 2","dueDate":"2026-07-29","qty":30.0},{"pn":"D55980","desc":"5800-0016-02-B, Flightwave, Overwatch, Stage 2","dueDate":"2026-08-05","qty":30.0},{"pn":"D55980","desc":"5800-0016-02-B, Flightwave, Overwatch, Stage 2","dueDate":"2026-08-12","qty":40.0},{"pn":"D55986","desc":"5800-0014-02-B, Flightwave, Overwatch, Stage 1","dueDate":"2026-06-19","qty":1.0},{"pn":"D55986","desc":"5800-0014-02-B, Flightwave, Overwatch, Stage 1","dueDate":"2026-06-24","qty":29.0},{"pn":"D55986","desc":"5800-0014-02-B, Flightwave, Overwatch, Stage 1","dueDate":"2026-07-01","qty":30.0},{"pn":"D55986","desc":"5800-0014-02-B, Flightwave, Overwatch, Stage 1","dueDate":"2026-07-08","qty":30.0},{"pn":"D55986","desc":"5800-0014-02-B, Flightwave, Overwatch, Stage 1","dueDate":"2026-07-15","qty":30.0},{"pn":"D55986","desc":"5800-0014-02-B, Flightwave, Overwatch, Stage 1","dueDate":"2026-07-22","qty":30.0},{"pn":"D55986","desc":"5800-0014-02-B, Flightwave, Overwatch, Stage 1","dueDate":"2026-07-29","qty":30.0},{"pn":"D55986","desc":"5800-0014-02-B, Flightwave, Overwatch, Stage 1","dueDate":"2026-08-05","qty":30.0},{"pn":"D55986","desc":"5800-0014-02-B, Flightwave, Overwatch, Stage 1","dueDate":"2026-08-12","qty":40.0},{"pn":"D56022","desc":"WINDOW RETAINER, 06EOIR4","dueDate":"2026-07-24","qty":25.0}];
-
-const LABOR_DATA_SEED = [{"pn":"D50019","customer":"MULTIPLE","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.0,"lam":0.0,"depart":0.0,"cncTrim":0.0,"handTrim":0.0,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":2.0,"qaFinal":0.25,"ship":0.1},{"pn":"D50513","customer":"12","batchQty":15.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.2,"plotter":0.75,"lam":0.25,"depart":0.25,"cncTrim":0.1,"handTrim":0.1,"qa1":0.25,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":0.75,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D50567","customer":"9","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.1,"plotter":1.0,"lam":0.1,"depart":0.25,"cncTrim":0.2,"handTrim":0.2,"qa1":0.4,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":0.75,"paint":0.1,"qaFinal":0.1,"ship":0},{"pn":"D50570","customer":"9","batchQty":15.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":1.0,"lam":0.25,"depart":0.25,"cncTrim":0.0,"handTrim":0.25,"qa1":0.25,"asy1":0.25,"qa2":0.25,"asy2":0.25,"qa3":2.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D50573","customer":"9","batchQty":15.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.25,"lam":0.25,"depart":0.25,"cncTrim":0.0,"handTrim":0.25,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":1.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D50574","customer":"9","batchQty":15.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":1.0,"lam":0.25,"depart":0.5,"cncTrim":0.5,"handTrim":0.25,"qa1":0.75,"asy1":0.25,"qa2":0.0,"asy2":0.0,"qa3":1.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D50579","customer":"9","batchQty":15.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.25,"asy1":0.25,"qa2":0.25,"asy2":0.0,"qa3":0.0,"paint":1.5,"qaFinal":0.25,"ship":0.1},{"pn":"D50729","customer":"12","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.1,"plotter":0.25,"lam":0.25,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.5,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D50883","customer":"9","batchQty":15.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.15,"plotter":0.75,"lam":0.1,"depart":0.3,"cncTrim":0.1,"handTrim":0.1,"qa1":0.5,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":1.0,"paint":0.1,"qaFinal":0.1,"ship":0},{"pn":"D50997","customer":"12","batchQty":2.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":1.5,"plotter":10.0,"lam":0.75,"depart":1.0,"cncTrim":4.0,"handTrim":0.75,"qa1":1.0,"asy1":0.1,"qa2":0.25,"asy2":0.25,"qa3":0.0,"paint":0.1,"qaFinal":0.1,"ship":0},{"pn":"D51159","customer":"7","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.5,"plotter":0.75,"lam":0.75,"depart":0.25,"cncTrim":0.1,"handTrim":0.25,"qa1":0.1,"asy1":0.65,"qa2":0.0,"asy2":0.5,"qa3":0.1,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D51242","customer":"9","batchQty":15.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":1.75,"plotter":1.0,"lam":0.5,"depart":0.2,"cncTrim":0.1,"handTrim":0.1,"qa1":0.75,"asy1":0.25,"qa2":0.0,"asy2":0.0,"qa3":2.0,"paint":0.1,"qaFinal":0.1,"ship":0},{"pn":"D51243","customer":"9","batchQty":24.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.1,"plotter":0.75,"lam":0.1,"depart":0.25,"cncTrim":0.1,"handTrim":0.0,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.1,"qaFinal":0.1,"ship":0},{"pn":"D51423","customer":"9","batchQty":15.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.5,"lam":1.0,"depart":0.25,"cncTrim":0.1,"handTrim":0.5,"qa1":0.1,"asy1":0.1,"qa2":0.1,"asy2":0.75,"qa3":0.1,"paint":4.0,"qaFinal":0.1,"ship":0.1},{"pn":"D55367","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.666666666666667,"depart":0.25,"cncTrim":0.125,"handTrim":0.025,"qa1":0.0416666666666667,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D51455","customer":"7","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":2.0,"lam":3.75,"depart":0.7,"cncTrim":0.8,"handTrim":0.6,"qa1":0.1,"asy1":2.65,"qa2":0.1,"asy2":5.1,"qa3":0.3,"paint":0.0,"qaFinal":0.2,"ship":0},{"pn":"D51457","customer":"9","batchQty":25.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.5,"depart":0.25,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":1.0,"qa2":0.25,"asy2":1.0,"qa3":0.0,"paint":2.0,"qaFinal":0.25,"ship":0.1},{"pn":"D51926","customer":"12","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.1,"plotter":1.0,"lam":0.25,"depart":0.25,"cncTrim":0.25,"handTrim":0.1,"qa1":0.5,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":1.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D55816","customer":"19","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":2.0,"depart":0.5,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":5.6,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":2.0,"qaFinal":0.25,"ship":0},{"pn":"D52072","customer":"9","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.25,"asy1":0.75,"qa2":0.25,"asy2":0.0,"qa3":0.0,"paint":1.0,"qaFinal":0.25,"ship":0},{"pn":"D52076","customer":"9","batchQty":15.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.5,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0},{"pn":"D52078","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.25,"asy1":0.25,"qa2":0.25,"asy2":0.0,"qa3":0.0,"paint":1.5,"qaFinal":0.25,"ship":0},{"pn":"D52098","customer":"9","batchQty":52.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.1,"cncTrim":0.0,"handTrim":0.1,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0.1},{"pn":"D52099","customer":"9","batchQty":52.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.1,"cncTrim":0.0,"handTrim":0.1,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0.1},{"pn":"D55733","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D52122","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.75,"depart":0.25,"cncTrim":0.1,"handTrim":0.1,"qa1":0.1,"asy1":0.8,"qa2":0.1,"asy2":0.0,"qa3":0.0,"paint":2.25,"qaFinal":0.1,"ship":0.1},{"pn":"D52132","customer":"9","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.6,"depart":0.25,"cncTrim":0.1,"handTrim":0.1,"qa1":0.1,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":1.2,"qaFinal":0.1,"ship":0},{"pn":"D52135","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":1.3,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D52216","customer":"12","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.25,"cncTrim":0.1,"handTrim":0.1,"qa1":0.1,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":1.0,"qaFinal":0.25,"ship":0.1},{"pn":"D52327","customer":"12","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.4,"lam":2.0,"depart":0.5,"cncTrim":0.5,"handTrim":0.5,"qa1":0.25,"asy1":1.0,"qa2":0.0,"asy2":0.0,"qa3":0.1,"paint":1.5,"qaFinal":0.1,"ship":0.1},{"pn":"D52617-02","customer":"11","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.5,"lam":1.0,"depart":0.5,"cncTrim":0.5,"handTrim":0.25,"qa1":0.1,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":2.0,"qaFinal":0.1,"ship":0.1},{"pn":"D53034-02","customer":"11","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.5,"plotter":1.25,"lam":0.25,"depart":1.0,"cncTrim":1.0,"handTrim":0.25,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":3.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D53274","customer":"9","batchQty":52.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.25,"cncTrim":0.1,"handTrim":0.1,"qa1":0.25,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0.1},{"pn":"D53333","customer":"9","batchQty":30.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D53346","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":0.75,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.25,"asy1":1.0,"qa2":0.0,"asy2":0.5,"qa3":0.25,"paint":1.5,"qaFinal":0.25,"ship":0.1},{"pn":"D53432-02","customer":"11","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.5,"lam":1.25,"depart":0.25,"cncTrim":1.0,"handTrim":1.0,"qa1":0.25,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":3.0,"qaFinal":0.25,"ship":0.1},{"pn":"D55734","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55627","customer":"8","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.4,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":0.6,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.4,"ship":0},{"pn":"D53695","customer":"9","batchQty":52.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.1,"depart":0.1,"cncTrim":0.0,"handTrim":0.1,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0.1},{"pn":"D53789","customer":"11","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":1.0,"depart":0.25,"cncTrim":0.5,"handTrim":0.3,"qa1":0.2,"asy1":2.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":1.5,"qaFinal":0.25,"ship":0},{"pn":"D53853","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":0.75,"depart":0.25,"cncTrim":0.4,"handTrim":0.1,"qa1":0.1,"asy1":0.75,"qa2":0.1,"asy2":0.0,"qa3":0.0,"paint":3.0,"qaFinal":0.1,"ship":0.1},{"pn":"D53856","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.4,"lam":0.75,"depart":0.25,"cncTrim":0.65,"handTrim":0.1,"qa1":0.1,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":2.0,"qaFinal":0.1,"ship":0.1},{"pn":"D53987","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.5,"lam":3.0,"depart":0.5,"cncTrim":0.5,"handTrim":2.0,"qa1":0.25,"asy1":2.0,"qa2":0.1,"asy2":0.0,"qa3":0.0,"paint":3.0,"qaFinal":0.25,"ship":0.1},{"pn":"D53989","customer":"9","batchQty":24.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D55320","customer":"8","batchQty":12.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.125,"depart":0.1,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.75,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55322","customer":"8","batchQty":12.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.125,"depart":0.1,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.5,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.2,"ship":0},{"pn":"D55324","customer":"8","batchQty":12.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.1,"depart":0.1,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.5,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D54059","customer":"12","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.5,"plotter":2.5,"lam":0.5,"depart":0.5,"cncTrim":0.5,"handTrim":0.25,"qa1":0.5,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":2.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D54118","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":0.75,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.0,"asy1":0.75,"qa2":0.25,"asy2":0.5,"qa3":0.25,"paint":2.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54119","customer":"9","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.25,"cncTrim":0.25,"handTrim":0.5,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54290","customer":"12","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":0.25,"depart":0.25,"cncTrim":0.1,"handTrim":0.025,"qa1":0.05,"asy1":0.3,"qa2":0.0375,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D54351","customer":"12","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":2.0,"depart":0.25,"cncTrim":0.75,"handTrim":0.1875,"qa1":0.5,"asy1":0.25,"qa2":0,"asy2":0,"qa3":0,"paint":5.0,"qaFinal":0.1625,"ship":0},{"pn":"D55326","customer":"8","batchQty":12.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.1,"depart":0.1,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.5,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D54576","customer":"12","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.5,"plotter":5.0,"lam":0.5,"depart":0.25,"cncTrim":1.5,"handTrim":0.25,"qa1":0.5,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":3.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D54643","customer":"9","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.2,"plotter":2.5,"lam":0.25,"depart":0.25,"cncTrim":1.0,"handTrim":0.25,"qa1":1.0,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":2.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D54644","customer":"9","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.2,"plotter":2.5,"lam":0.25,"depart":0.25,"cncTrim":1.0,"handTrim":0.25,"qa1":1.0,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":2.0,"paint":0.25,"qaFinal":0.1,"ship":0},{"pn":"D54703","customer":"9","batchQty":32.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":0.25,"depart":0.1,"cncTrim":0.0390625,"handTrim":0.09375,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.08,"ship":0},{"pn":"D54713","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.3,"lam":1.5,"depart":0.25,"cncTrim":0.25,"handTrim":0.25,"qa1":0.25,"asy1":2.0,"qa2":0.1,"asy2":0.0,"qa3":0.0,"paint":3.75,"qaFinal":0.1,"ship":0.1},{"pn":"D54714","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":0.75,"depart":0.25,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":0.25,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54717","customer":"9","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":0.1875,"depart":0.5,"cncTrim":0.1875,"handTrim":0.03125,"qa1":0.046875,"asy1":0.0625,"qa2":0.046875,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D54735","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.25,"lam":2.5,"depart":0.5,"cncTrim":0.25,"handTrim":1.5,"qa1":0.25,"asy1":0.5,"qa2":0.1,"asy2":0.0,"qa3":0.0,"paint":0.5,"qaFinal":0.25,"ship":0.1},{"pn":"D54772","customer":"1","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.5,"depart":0.25,"cncTrim":0.1,"handTrim":0.5,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0.1},{"pn":"D54773","customer":"1","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":2.0,"depart":0.25,"cncTrim":0.25,"handTrim":1.0,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54774","customer":"1","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":2.0,"depart":0.25,"cncTrim":0.1,"handTrim":0.5,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54775","customer":"1","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":1.5,"depart":0.25,"cncTrim":0.1,"handTrim":0.5,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54776","customer":"1","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":1.25,"depart":0.25,"cncTrim":0.1,"handTrim":0.5,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54818","customer":"6","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.25,"cncTrim":0.1,"handTrim":0.25,"qa1":0.1,"asy1":0.5,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54819","customer":"6","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.25,"depart":0.25,"cncTrim":0.1,"handTrim":0.25,"qa1":0.1,"asy1":0.5,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54820","customer":"6","batchQty":1.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.5,"kitting":0.25,"plotter":2.0,"lam":6.0,"depart":2.0,"cncTrim":1.0,"handTrim":2.0,"qa1":1.5,"asy1":6.0,"qa2":1.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D55075","customer":"15","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":2.0,"depart":0.5,"cncTrim":0.5,"handTrim":0.5,"qa1":0.25,"asy1":1.0,"qa2":0.1,"asy2":0.0,"qa3":0.0,"paint":1.25,"qaFinal":0.1,"ship":0},{"pn":"D54887","customer":"9","batchQty":6.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.15,"lam":0.5,"depart":0.5,"cncTrim":0.25,"handTrim":0.25,"qa1":0.25,"asy1":0.5,"qa2":0.25,"asy2":0.0,"qa3":0.0,"paint":2.75,"qaFinal":0.25,"ship":0.1},{"pn":"D54888","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":0.75,"depart":0.25,"cncTrim":0.25,"handTrim":0.1,"qa1":0.25,"asy1":0.75,"qa2":0.25,"asy2":0.25,"qa3":0.25,"paint":3.0,"qaFinal":0.25,"ship":0.1},{"pn":"D54890","customer":"9","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.1,"depart":0.1,"cncTrim":0.1,"handTrim":0.1,"qa1":0.1,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":1.0,"qaFinal":0.1,"ship":0.1},{"pn":"D55002","customer":"6","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.5,"depart":0.25,"cncTrim":0.1,"handTrim":0.25,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0.1},{"pn":"D55003","customer":"6","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.1,"lam":0.5,"depart":0.25,"cncTrim":0.1,"handTrim":0.25,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0.1},{"pn":"D55004","customer":"6","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":1.0,"depart":0.25,"cncTrim":0.1,"handTrim":0.5,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D55005","customer":"6","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":1.0,"depart":0.25,"cncTrim":0.1,"handTrim":0.5,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D55008","customer":"12","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":1.0,"depart":0.25,"cncTrim":0.0,"handTrim":0.0,"qa1":0.1,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.2,"ship":0.1},{"pn":"D55035","customer":"9","batchQty":12.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.2,"lam":0.2,"depart":0.1,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0.1},{"pn":"D55043","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.666666666666667,"depart":0.25,"cncTrim":0.125,"handTrim":0.025,"qa1":0.0416666666666667,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":1.1,"qaFinal":0.0833333333333333,"ship":0},{"pn":"D55519","customer":"8","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.1,"depart":0.1,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.5,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55079","customer":"12","batchQty":6.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":2.0,"lam":10.0,"depart":0.75,"cncTrim":0.75,"handTrim":0.5,"qa1":0.8,"asy1":5.3,"qa2":0.2,"asy2":1.0,"qa3":0.2,"paint":0.0,"qaFinal":0.2,"ship":0.1},{"pn":"D55118","customer":"3","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.4,"lam":0.75,"depart":0.25,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":1.0,"qaFinal":0.1,"ship":0.1},{"pn":"D55140","customer":"3","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.888888888888889,"depart":0.25,"cncTrim":0.183501683501684,"handTrim":0.0475589225589226,"qa1":0.102693602693603,"asy1":0.105218855218855,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.125,"ship":0},{"pn":"D55146","customer":"1","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":1.0,"lam":4.0,"depart":0.75,"cncTrim":4.0,"handTrim":0.5,"qa1":0.5,"asy1":3.25,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.25,"ship":0.1},{"pn":"D55208","customer":"3","batchQty":24.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.0,"lam":0.0,"depart":0.0,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":0.25,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.75,"qaFinal":0.1,"ship":0.1},{"pn":"D55229","customer":"24","batchQty":1.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":3.0,"depart":0.5,"cncTrim":1.0,"handTrim":0.25,"qa1":0.25,"asy1":4.0,"qa2":0.25,"asy2":0.0,"qa3":0.0,"paint":1.5,"qaFinal":0.25,"ship":0},{"pn":"D55419","customer":"24","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55420","customer":"24","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55265","customer":"3","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":0.6,"depart":0.125,"cncTrim":0.7,"handTrim":0.0,"qa1":0.5,"asy1":0.75,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55295","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":1.0,"depart":0.25,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55520","customer":"8","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.125,"depart":0.1,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.75,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55521","customer":"8","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.1,"depart":0.1,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.5,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55522","customer":"8","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.125,"depart":0.1,"cncTrim":0.2,"handTrim":0.1,"qa1":0.1,"asy1":0.5,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.2,"ship":0},{"pn":"D51927","customer":"12","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.6,"depart":0.25,"cncTrim":0.2,"handTrim":1.25,"qa1":0.2,"asy1":0.2,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":1.5,"qaFinal":0.05,"ship":0},{"pn":"D55366","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":3.5,"depart":1.0,"cncTrim":2.0,"handTrim":0.5,"qa1":0.75,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.5,"ship":0},{"pn":"D51435","customer":"7","batchQty":170.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.0,"depart":0.0,"cncTrim":0.1,"handTrim":0.1,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55368","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.5,"depart":0.5,"cncTrim":0.175,"handTrim":0.1,"qa1":0.1375,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.15,"ship":0},{"pn":"D55371","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.375,"cncTrim":0.259375,"handTrim":0.2203125,"qa1":0.146875,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55372","customer":"1","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.5,"cncTrim":0.25,"handTrim":0.1,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55373","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.5,"depart":0.25,"cncTrim":0.2,"handTrim":0.1,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55523","customer":"8","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.4,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":0.6,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.4,"ship":0},{"pn":"D55490","customer":"3","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0.25,"lam":0.25,"depart":0.25,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":0.6,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0.1},{"pn":"D54043","customer":"15","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":0.75,"depart":0.25,"cncTrim":0.25,"handTrim":0.4,"qa1":0.1,"asy1":0.1,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":2.0,"qaFinal":0.1,"ship":0},{"pn":"D54453","customer":"27","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.25,"depart":0.25,"cncTrim":0,"handTrim":0,"qa1":0.025,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55385","customer":"19","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":2.2,"depart":0.5,"cncTrim":0.5,"handTrim":0.75,"qa1":0.3,"asy1":3.0,"qa2":0.2,"asy2":0.0,"qa3":0.0,"paint":3.0,"qaFinal":0.25,"ship":0},{"pn":"D54884-02","customer":"11","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0.25,"kitting":0.25,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55542","customer":"13","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D53506","customer":"18","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D54039","customer":"15","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.25,"depart":0.25,"cncTrim":0.4,"handTrim":0.8,"qa1":0.2,"asy1":0.25,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":2.5,"qaFinal":0.2,"ship":0},{"pn":"D54040","customer":"15","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.5,"cncTrim":0.4,"handTrim":1.1,"qa1":0.1,"asy1":0.25,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":2.0,"qaFinal":0.1,"ship":0},{"pn":"D53505","customer":"18","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55546","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.5,"depart":0.75,"cncTrim":1.0,"handTrim":0.5,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.5,"ship":0},{"pn":"D55518","customer":"8","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.4,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":0.6,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.4,"ship":0},{"pn":"D55731","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.25,"cncTrim":0.25,"handTrim":0.1,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55732","customer":"1","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.25,"cncTrim":0.25,"handTrim":0.1,"qa1":0.0,"asy1":0.0,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.1,"ship":0},{"pn":"D55524","customer":"8","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.4,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":0.6,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.4,"ship":0},{"pn":"D55525","customer":"8","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.4,"cncTrim":0.25,"handTrim":0.1,"qa1":0.1,"asy1":0.6,"qa2":0.0,"asy2":0.0,"qa3":0.0,"paint":0.0,"qaFinal":0.4,"ship":0},{"pn":"D52119","customer":"9","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.4,"depart":0.25,"cncTrim":0.3,"handTrim":0.1,"qa1":0.1,"asy1":1.75,"qa2":0.1,"asy2":0.0,"qa3":0.0,"paint":2.7,"qaFinal":0.1,"ship":0.1},{"pn":"D55711","customer":"21","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":4.5,"depart":2.25,"cncTrim":3.0,"handTrim":2.0,"qa1":1.75,"asy1":8.5,"qa2":0.25,"asy2":0,"qa3":0,"paint":8.0,"qaFinal":0.5,"ship":0},{"pn":"D55712","customer":"21","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":3.5,"depart":1.75,"cncTrim":0.75,"handTrim":0.5,"qa1":0.25,"asy1":6.0,"qa2":0.25,"asy2":0,"qa3":0,"paint":6.0,"qaFinal":0.5,"ship":0},{"pn":"D55713","customer":"21","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":2.55,"depart":1.2,"cncTrim":1.0,"handTrim":1.0,"qa1":0.7,"asy1":5.0,"qa2":0.25,"asy2":0,"qa3":0,"paint":5.0,"qaFinal":0.5,"ship":0},{"pn":"D55714","customer":"21","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":2.55,"depart":1.2,"cncTrim":1.0,"handTrim":1.0,"qa1":0.7,"asy1":5.0,"qa2":0.25,"asy2":0,"qa3":0,"paint":5.0,"qaFinal":0.5,"ship":0},{"pn":"D55715","customer":"21","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.5,"depart":0.5,"cncTrim":0.5,"handTrim":0.25,"qa1":0.25,"asy1":0.5,"qa2":0.25,"asy2":0,"qa3":0,"paint":2.0,"qaFinal":0.5,"ship":0},{"pn":"D55648","customer":"21","batchQty":2.0,"cyclesPerDay":2.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.5,"depart":0.25,"cncTrim":0,"handTrim":1.0,"qa1":0.5,"asy1":0.0,"qa2":0,"asy2":0,"qa3":0,"paint":3.0,"qaFinal":0.5,"ship":0},{"pn":"D50584","customer":"","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.75,"depart":0.25,"cncTrim":0.25,"handTrim":0.05,"qa1":0.075,"asy1":0.75,"qa2":0.75,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D50769","customer":"","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.25,"depart":0.25,"cncTrim":0.075,"handTrim":0.05,"qa1":0.025,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D50863","customer":"","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.25,"depart":0.25,"cncTrim":0.058,"handTrim":0.2,"qa1":0.38,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D51831","customer":"","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":2.5,"depart":0.5,"cncTrim":0.833,"handTrim":0.1,"qa1":0.5,"asy1":1.5,"qa2":0.5,"asy2":0,"qa3":0,"paint":2.0,"qaFinal":0,"ship":0},{"pn":"D52378","customer":"","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.25,"depart":0.25,"cncTrim":0.075,"handTrim":0.025,"qa1":0.05,"asy1":0.5,"qa2":0.1,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D52669","customer":"","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.6,"depart":0.25,"cncTrim":0.31,"handTrim":0.086,"qa1":0.073,"asy1":0.25,"qa2":0.1,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D54038","customer":"","batchQty":20.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.25,"depart":0.25,"cncTrim":0.125,"handTrim":0.0375,"qa1":0.05,"asy1":0.15,"qa2":0.075,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D54044","customer":"","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.58,"depart":0.25,"cncTrim":0.24,"handTrim":0.066,"qa1":0.083,"asy1":0.15,"qa2":0.1,"asy2":0.22,"qa3":0,"paint":1.6,"qaFinal":0.06,"ship":0},{"pn":"D54045","customer":"","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":5.375,"depart":0.69,"cncTrim":1.06,"handTrim":0.413,"qa1":0.343,"asy1":2.1,"qa2":0.35,"asy2":2.4,"qa3":0,"paint":4.7,"qaFinal":0.55,"ship":0},{"pn":"D55008-00","customer":"","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.25,"cncTrim":0.35,"handTrim":0.15,"qa1":0.3,"asy1":0,"qa2":0.025,"asy2":0,"qa3":0,"paint":0,"qaFinal":0.15,"ship":0},{"pn":"D55040","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.25,"depart":0.25,"cncTrim":0.125,"handTrim":0.033,"qa1":0.0625,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55041","customer":"","batchQty":10.0,"cyclesPerDay":2.0,"upCount":2.0,"planning":0,"kitting":0,"plotter":0,"lam":0.25,"depart":0.5,"cncTrim":0.125,"handTrim":0.0625,"qa1":0.0625,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":2.0,"qaFinal":0.0625,"ship":0},{"pn":"D55318","customer":"","batchQty":5.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.16,"depart":0.42,"cncTrim":0.48,"handTrim":0.166,"qa1":0.15,"asy1":1.2,"qa2":0.15,"asy2":0,"qa3":0,"paint":0,"qaFinal":0.1,"ship":0},{"pn":"D55349","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55369","customer":"","batchQty":10.0,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.75,"depart":0.5,"cncTrim":0.185,"handTrim":0.116,"qa1":0.11,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55517","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55580","customer":"","batchQty":20.0,"cyclesPerDay":1,"upCount":1,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0.32,"handTrim":0.0625,"qa1":0.0625,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0.016666666666666666,"ship":0},{"pn":"D55750","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55751","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55761","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.0,"depart":0.25,"cncTrim":0.45,"handTrim":0.276,"qa1":0.326,"asy1":4.5,"qa2":0.105,"asy2":0,"qa3":0,"paint":3.66,"qaFinal":0.29,"ship":0},{"pn":"D55817","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":1.5,"depart":0.5,"cncTrim":0.75,"handTrim":0.25,"qa1":0.5,"asy1":1.25,"qa2":0.25,"asy2":0,"qa3":0,"paint":3.0,"qaFinal":0.5,"ship":0},{"pn":"D55829","customer":"","batchQty":1,"cyclesPerDay":2.0,"upCount":4.0,"planning":0,"kitting":0,"plotter":0,"lam":0.1875,"depart":0.0625,"cncTrim":0.25,"handTrim":0.125,"qa1":0.125,"asy1":0.125,"qa2":0.125,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55833","customer":"","batchQty":1,"cyclesPerDay":2.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.5,"depart":0.5,"cncTrim":0.75,"handTrim":0.25,"qa1":0.5,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55840","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55841","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55854","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55862","customer":"","batchQty":1,"cyclesPerDay":2.0,"upCount":4.0,"planning":0,"kitting":0,"plotter":0,"lam":0.2,"depart":0.5,"cncTrim":0.140625,"handTrim":0.015625,"qa1":0.1875,"asy1":0.1875,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55867","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55897","customer":"","batchQty":1,"cyclesPerDay":2.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0.75,"depart":0.5,"cncTrim":0.375,"handTrim":0.1,"qa1":0.15,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55916","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55917","customer":"","batchQty":1,"cyclesPerDay":2.0,"upCount":4.0,"planning":0,"kitting":0,"plotter":0,"lam":0.25,"depart":0.5,"cncTrim":0.25,"handTrim":0.0625,"qa1":0.0625,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55935","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55980","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D55986","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0},{"pn":"D56022","customer":"","batchQty":1,"cyclesPerDay":1.0,"upCount":1.0,"planning":0,"kitting":0,"plotter":0,"lam":0,"depart":0,"cncTrim":0,"handTrim":0,"qa1":0,"asy1":0,"qa2":0,"asy2":0,"qa3":0,"paint":0,"qaFinal":0,"ship":0}];
+// ── DEMAND SOURCE: THE P&P TAB ───────────────────────────────────
+// Demand is read live from the current "P&P MM.DD" tab (SAP B1 SO export),
+// resolved at runtime by resolvePPSheet(). Nothing is hard-coded.
+// P&P columns: DPN col F, Description col G, Open Qty col H, Due Date col J; row 1 = headers.
+const PP_FIRST_ROW = 2;   // row 1 = headers
+const PP_DPN_COL   = 6;   // F  (Decavo Part Number — matches Part Labor Data)
+const PP_DESC_COL  = 7;   // G  (item description)
+const PP_QTY_COL   = 8;   // H  (Open Qty = demand)
+const PP_DUE_COL   = 10;  // J  (Delivery / Due Date)
 
 // ── CONSTANTS ────────────────────────────────────────────────────
 const APPLIED_HRS_PER_DAY = 6.75;
 const WORK_DAYS_PER_WEEK  = 5;
 const AVAIL_HRS_PER_PERSON_PER_WEEK = APPLIED_HRS_PER_DAY * WORK_DAYS_PER_WEEK; // 33.75
 
-const DEPTS = ['LAM','DEPART','CNC TRIM','HAND-TRIM','PLOTTER','QA','ASY','PAINT','SHIP','PLANNING','KITTING'];
+const DEPTS = ['LAM','DEPART','CNC TRIM','HAND-TRIM','PLOTTER','QA','KITTING','ASY','PAINT','SHIP'];
 const LAM_DEPTS    = ['LAM','DEPART','CNC TRIM','HAND-TRIM','PLOTTER'];
-const FINISH_DEPTS = ['QA','ASY','PAINT','SHIP'];
-const SCHED_DEPTS  = ['PLANNING','KITTING'];
+const FINISH_DEPTS = ['QA','KITTING','ASY','PAINT','SHIP'];
+const SCHED_DEPTS  = [];  // No per-job ops in the new layout: PLANNING removed, KITTING is now per-part (finish phase)
 
 // Dept colors (hex, no #)
 const DEPT_COLORS = {
@@ -52,7 +53,6 @@ function onOpen() {
     .createMenu('📊 Capacity Planning')
     .addItem('🔄 Refresh Capacity', 'refreshCapacity')
     .addItem('🏗️ Build All Sheets (first run)', 'buildAll')
-    .addItem('📋 Reseed Labor Data from source', 'reseedLaborData')
     .addToUi();
 }
 
@@ -62,64 +62,199 @@ function removeExistingFilter(ws) {
 
 function buildAll() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  buildLaborDataSheet(ss);
-  buildDemandSheet(ss);
+  // Note: the "📋 Part Labor Data" tab is user-owned (paste your labor data),
+  // and demand is read live from the current "P&P MM.DD" tab. buildAll only
+  // (re)generates the derived output sheets.
   buildChartsSheet(ss);
-  refreshCapacity();  // builds Weekly Capacity + LAM Schedule and populates all data
-  SpreadsheetApp.getUi().alert('✅ All sheets built! Click "🔄 Refresh Capacity" any time after editing labor data.');
+  refreshCapacity();  // reads P&P demand → Demand Detail + Weekly Capacity + LAM Schedule
+  SpreadsheetApp.getUi().alert('✅ All sheets built! Click "🔄 Refresh Capacity" any time.');
 }
 
 function refreshCapacity() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const laborMap = readLaborData(ss);
-  const { weeklyHours, lamSchedule, allWeeks } = computeCapacity(laborMap);
+  const demand   = readDemandFromPP(ss);   // live top-level demand from the current P&P tab
+  const bom      = readParentChild(ss);    // Parent → Child BOM (for explosion)
+  const { weeklyHours, lamSchedule, allWeeks } = computeCapacity(laborMap, demand, bom);
   writeWeeklyCapacity(ss, weeklyHours, allWeeks);
   writeLamSchedule(ss, lamSchedule);
-  updateDemandStatus(ss, laborMap);
-  SpreadsheetApp.getActiveSpreadsheet().toast('✅ Capacity refreshed!', 'Done', 3);
+  buildDemandSheet(ss, demand, laborMap);   // rebuild Demand Detail (+ labor-data status) from live P&P
+
+  if (allWeeks.length === 0) {
+    const msg = 'Refreshed, but no weekly demand was produced.\n\n' +
+      '• Demand rows read from the P&P tab: ' + demand.length + '\n' +
+      '• Labor parts counted (On P&P? = TRUE with data): ' + Object.keys(laborMap).length + '\n\n' +
+      'Check that a "P&P MM.DD" tab exists with data, that Part Labor Data rows are ' +
+      'marked On P&P? = TRUE, and that the DPNs match between the two.';
+    try { SpreadsheetApp.getUi().alert(msg); } catch (e) { ss.toast(msg, '⚠ No demand', 8); }
+  } else {
+    ss.toast('✅ Capacity refreshed!', 'Done', 3);
+  }
 }
 
 // ── READ LABOR DATA FROM SHEET ────────────────────────────────────
 
 function readLaborData(ss) {
   const ws = ss.getSheetByName('📋 Part Labor Data');
-  if (!ws) { reseedLaborData(ss); return readLaborData(ss); }
+  if (!ws) {
+    ss.toast('No "📋 Part Labor Data" tab found — paste your labor data into a tab with that name, then Refresh.', 'Missing tab', 6);
+    return {};
+  }
   const data = ws.getDataRange().getValues();
-  // Find header row (row with "Part Number")
-  let hdrRow = -1;
+  // Find header row (row containing "Part Number" in any column) and note which
+  // column Part Number lives in — in the new layout it is column B, not A.
+  let hdrRow = -1, pnCol = -1;
   for (let i = 0; i < data.length; i++) {
-    if (String(data[i][0]).trim() === 'Part Number') { hdrRow = i; break; }
+    const idx = data[i].findIndex(c => String(c).trim() === 'Part Number');
+    if (idx >= 0) { hdrRow = i; pnCol = idx; break; }
   }
   if (hdrRow < 0) return {};
   const hdrs = data[hdrRow].map(h => String(h).trim());
+  const isYes = v => v === true || ['TRUE','YES','X'].indexOf(String(v).trim().toUpperCase()) >= 0;
   const map = {};
   for (let i = hdrRow + 1; i < data.length; i++) {
     const row = data[i];
-    const pn = String(row[0]).trim();
+    const pn = String(row[pnCol]).trim();
     if (!pn) continue;
     const obj = {};
     hdrs.forEach((h, j) => { obj[h] = row[j]; });
+    // Only count parts flagged on the Pick & Pack plan (On P&P? = TRUE)
+    if (!isYes(obj['On P&P?'])) continue;
     const n = k => { const v = parseFloat(obj[k]); return isNaN(v) ? 0 : v; };
     map[pn] = {
-      customer:     String(obj['CUSTOMER'] || ''),
-      cyclesPerDay: n('Cycles/Day') || 1,
-      upCount:      n('Tool UP Count') || 1,
-      planning:     n('PLANNING (PER JOB)'),
-      kitting:      n('Kitting (PER JOB)'),
-      plotter:      n('PLOTTER'),
-      lam:          n('LAM'),
-      depart:       n('DEPART'),
-      cncTrim:      n('CNC TRIM'),
-      handTrim:     n('HAND-TRIM'),
-      qa1:          n('QA 1'),    asy1: n('ASY 1'),
-      qa2:          n('QA 2'),    asy2: n('ASY 2'),
-      qa3:          n('QA 3 (auto inspect)'),
-      paint:        n('PAINT'),
-      qaFinal:      n('QA (Final)'),
-      ship:         n('SHIP'),
+      customer:      String(obj['CUSTOMER'] || ''),
+      cyclesPerDay:  n('Tool Cycles / Day') || 1,
+      upCount:       n('Parts / Cycle') || 1,
+      plotter:       n('PLOTTER'),
+      lam:           n('LAM'),
+      depart:        n('DEPART'),
+      cncTrim:       n('CNC_TRIM'),
+      handTrim:      n('HAND_TRIM'),
+      qa1:           n('QA_1'),
+      qa2:           n('QA_2'),
+      qa3:           n('QA_3'),
+      qa4:           n('QA_4'),
+      kitting:       n('KITTING'),
+      asy1:          n('ASY_1'),
+      asy2:          n('ASY_2'),
+      asyRepair:     n('ASY_REPAIR'),
+      outsourceDays: n('OUTSOURCE'),   // business days per MO — shifts LAM start earlier
+      paint1:        n('PAINT_1'),
+      paint2:        n('PAINT_2'),
+      ship:          n('SHIP'),
     };
   }
   return map;
+}
+
+// ── READ DEMAND FROM THE P&P TAB ──────────────────────────────────
+
+// Finds the current P&P tab. Its name is "P&P MM.DD" (month.day of the last
+// update, no leading zeros); if more than one exists, keep the most recent by
+// date. Returns the Sheet or null. (Mirrors the 13-WK Back End resolver so both
+// tools always read the same tab.)
+function resolvePPSheet(ss) {
+  const re = /^P&P\s+(\d{1,2})\.(\d{1,2})$/;
+  let best = null, bestKey = -1;
+  ss.getSheets().forEach(sh => {
+    const m = sh.getName().trim().match(re);
+    if (!m) return;
+    const key = Number(m[1]) * 100 + Number(m[2]);   // MM.DD → sortable number
+    if (key > bestKey) { bestKey = key; best = sh; }
+  });
+  return best;
+}
+
+// Reads demand live from the current P&P tab → [{pn, desc, dueDate:'YYYY-MM-DD', qty}].
+// P&P columns: DPN col F, Description col G, Open Qty col H, Due Date col J; row 1 = headers.
+function readDemandFromPP(ss) {
+  const sh = resolvePPSheet(ss);
+  const out = [];
+  if (!sh) {
+    ss.toast('No "P&P MM.DD" tab found — demand could not be read.', 'Missing P&P tab', 6);
+    return out;
+  }
+  const last = sh.getLastRow();
+  if (last < PP_FIRST_ROW) return out;
+  const readCols = Math.max(PP_DUE_COL, PP_DPN_COL, PP_QTY_COL, PP_DESC_COL);
+  const vals = sh.getRange(PP_FIRST_ROW, 1, last - PP_FIRST_ROW + 1, readCols).getValues();
+  for (let i = 0; i < vals.length; i++) {
+    const pn = String(vals[i][PP_DPN_COL - 1] || '').trim();
+    if (!pn) continue;
+    const qty = Number(vals[i][PP_QTY_COL - 1]) || 0;
+    if (qty <= 0) continue;
+    const dueRaw = vals[i][PP_DUE_COL - 1];
+    const due = (dueRaw instanceof Date) ? dueRaw : new Date(dueRaw);
+    if (isNaN(due.getTime())) continue;
+    const iso = due.getFullYear() + '-' + ('0' + (due.getMonth() + 1)).slice(-2) + '-' + ('0' + due.getDate()).slice(-2);
+    const desc = PP_DESC_COL > 0 ? String(vals[i][PP_DESC_COL - 1] || '').trim() : '';
+    out.push({ pn: pn, desc: desc, dueDate: iso, qty: qty });
+  }
+  return out;
+}
+
+// ── READ BOM (PARENT → CHILD) ─────────────────────────────────────
+
+// Reads the "Parent to Child" tab → { parent: [{child, qtyPer}] }.
+// Columns: A = parent, B = child, C = qty of child per one parent (blank → 1).
+function readParentChild(ss) {
+  const sh = ss.getSheetByName('Parent to Child');
+  const map = {};
+  if (!sh) {
+    ss.toast('No "Parent to Child" tab found — BOM was not exploded (top-level labor only).', 'Missing BOM tab', 6);
+    return map;
+  }
+  const last = sh.getLastRow();
+  if (last < 2) return map;
+  const vals = sh.getRange(2, 1, last - 1, 3).getValues();   // A, B, C
+  for (let i = 0; i < vals.length; i++) {
+    const parent = String(vals[i][0] || '').trim();
+    const child  = String(vals[i][1] || '').trim();
+    if (!parent || !child) continue;
+    let qtyPer = Number(vals[i][2]);
+    if (!isFinite(qtyPer) || qtyPer <= 0) qtyPer = 1;   // default to 1 per assembly
+    (map[parent] = map[parent] || []).push({ child: child, qtyPer: qtyPer });
+  }
+  return map;
+}
+
+// Explode each top-level P&P demand line down the BOM, accumulating the total
+// quantity of every part (the item itself + all descendants) required, with
+// quantities multiplied down each level. Returns a demand-shaped list
+// [{pn, desc, dueDate, qty}] aggregated by (pn, dueDate) across all P&P lines.
+function explodeDemand(demand, parentToChildren) {
+  // expand(pn): total required quantity of pn itself + every descendant, per ONE
+  // unit of pn. Memoized so a shared sub-assembly is expanded only once (a plain
+  // depth-first walk re-visits shared parts once per path and can blow up
+  // exponentially). 'computing' guards against circular BOM data.
+  const memo = {}, computing = {};
+  const expand = (pn) => {
+    if (memo[pn]) return memo[pn];
+    if (computing[pn]) return { [pn]: 1 };   // cycle: treat pn as a leaf
+    computing[pn] = true;
+    const res = { [pn]: 1 };
+    (parentToChildren[pn] || []).forEach(k => {
+      const sub = expand(k.child);
+      for (const d in sub) res[d] = (res[d] || 0) + sub[d] * k.qtyPer;
+    });
+    computing[pn] = false;
+    memo[pn] = res;
+    return res;
+  };
+
+  const agg = {};   // 'pn|dueDate' -> {pn, desc, dueDate, qty}
+  const add = (pn, dueDate, qty, desc) => {
+    const key = pn + '|' + dueDate;
+    if (!agg[key]) agg[key] = { pn: pn, desc: '', dueDate: dueDate, qty: 0 };
+    agg[key].qty += qty;
+    if (desc) agg[key].desc = desc;   // prefer a real P&P description over blank
+  };
+
+  demand.forEach(row => {
+    const need = expand(row.pn);
+    for (const pn in need) add(pn, row.dueDate, need[pn] * row.qty, pn === row.pn ? row.desc : '');
+  });
+  return Object.keys(agg).map(k => agg[k]);
 }
 
 // ── CORE COMPUTATION ─────────────────────────────────────────────
@@ -131,11 +266,10 @@ function getDeptHrs(lab, dept) {
     case 'CNC TRIM': return lab.cncTrim;
     case 'HAND-TRIM':return lab.handTrim;
     case 'PLOTTER':  return lab.plotter;
-    case 'QA':       return lab.qa1 + lab.qa2 + lab.qa3 + lab.qaFinal;
-    case 'ASY':      return lab.asy1 + lab.asy2;
-    case 'PAINT':    return lab.paint;
+    case 'QA':       return lab.qa1 + lab.qa2 + lab.qa3 + lab.qa4;
+    case 'ASY':      return lab.asy1 + lab.asy2 + lab.asyRepair;
+    case 'PAINT':    return lab.paint1 + lab.paint2;
     case 'SHIP':     return lab.ship;
-    case 'PLANNING': return lab.planning;
     case 'KITTING':  return lab.kitting;
     default: return 0;
   }
@@ -161,19 +295,27 @@ function addWeeks(dateObj, n) {
   return d;
 }
 
-function computeCapacity(laborMap) {
+function computeCapacity(laborMap, demand, parentToChildren) {
   // weeklyHours: { weekKey: { dept: hours } }
   const weeklyHours = {};
   const lamSchedule = [];
 
-  DEMAND_DATA.forEach(row => {
+  // Explode top-level P&P demand down the BOM so every sub-part's labor is
+  // counted (quantities multiplied down each level, aggregated by pn + due date).
+  // With no "Parent to Child" tab this returns the demand unchanged (top-level only).
+  const exploded = explodeDemand(demand, parentToChildren || {});
+
+  exploded.forEach(row => {
     const lab = laborMap[row.pn];
-    if (!lab) return; // no labor data
+    if (!lab) return; // no labor data (e.g. purchased/hardware part) — 0 labor contribution
 
     const qty          = row.qty;
     const dueWeek      = mondayOfWeek(row.dueDate);
-    const lamDeadline  = addWeeks(dueWeek, -2);   // last week LAM must be DONE
-    const finishWeek   = addWeeks(dueWeek, -1);    // QA/ASY/PAINT must be done
+    // OUTSOURCE lead time (business days per MO) pushes upstream work earlier so
+    // there is time to outsource before the finish ops. Convert days → whole weeks.
+    const outsourceWeeks = lab.outsourceDays > 0 ? Math.ceil(lab.outsourceDays / WORK_DAYS_PER_WEEK) : 0;
+    const lamDeadline  = addWeeks(dueWeek, -2 - outsourceWeeks); // last week LAM must be DONE
+    const finishWeek   = addWeeks(dueWeek, -1);    // QA/KITTING/ASY/PAINT/SHIP load here
 
     // ── Cycle constraint: how many weeks of LAM needed? ──
     const partsPerWeek = lab.cyclesPerDay * lab.upCount * WORK_DAYS_PER_WEEK;
@@ -219,6 +361,7 @@ function computeCapacity(laborMap) {
       qty:           qty,
       cyclesPerDay:  lab.cyclesPerDay,
       upCount:       lab.upCount,
+      outsourceDays: lab.outsourceDays,
       partsPerWeek:  partsPerWeek,
       lamWeeksNeeded:lamWeeksNeeded,
       lamStart:      weekKey(lamStart),
@@ -230,12 +373,12 @@ function computeCapacity(laborMap) {
   });
 
   // Flag demand rows with no labor data
-  DEMAND_DATA.forEach(row => {
+  demand.forEach(row => {
     if (!laborMap[row.pn]) {
       const dueWeek = mondayOfWeek(row.dueDate);
       lamSchedule.push({
         pn: row.pn, desc: row.desc, dueDate: row.dueDate, qty: row.qty,
-        cyclesPerDay: '?', upCount: '?', partsPerWeek: '?',
+        cyclesPerDay: '?', upCount: '?', outsourceDays: '', partsPerWeek: '?',
         lamWeeksNeeded: '?', lamStart: '?', lamDeadline: weekKey(addWeeks(dueWeek,-2)),
         finishWeek: weekKey(addWeeks(dueWeek,-1)), hasLaborData: false, overloaded: false
       });
@@ -278,7 +421,7 @@ function writeWeeklyCapacity(ss, weeklyHours, allWeeks) {
 
   // Row 2 — Note
   ws.getRange(2, 1, 1, totalCols).merge()
-    .setValue('LAM/TRIM/PLOTTER hours spread backward from due date based on cycle rate & tool UP count  |  QA/ASY/PAINT/SHIP load 1 wk before due  |  Edit Part Labor Data → click Refresh')
+    .setValue('Demand exploded through the BOM (Parent to Child): each P&P item + all sub-parts × qty  |  LAM/TRIM/PLOTTER spread backward by cycle rate  |  QA/KITTING/ASY/PAINT/SHIP load 1 wk before due  |  OUTSOURCE shifts LAM earlier')
     .setBackground('#E8F5E9').setFontColor('#333333').setFontStyle('italic').setFontSize(9)
     .setHorizontalAlignment('center');
   ws.setRowHeight(2, 16);
@@ -311,7 +454,7 @@ function writeWeeklyCapacity(ss, weeklyHours, allWeeks) {
 
   // Row 6 — capacity formula
   ws.getRange(6, 1).setValue('Avail Hrs/Wk').setBackground('#E3F2FD').setFontColor('#1565C0').setFontStyle('italic').setHorizontalAlignment('center');
-  const colLetters = ['B','C','D','E','F','G','H','I','J','K','L'];
+  const colLetters = ['B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T'];
   DEPTS.forEach((dept, i) => {
     const cl = colLetters[i];
     ws.getRange(6, i + 2).setFormula('=' + cl + '5*' + AVAIL_HRS_PER_PERSON_PER_WEEK)
@@ -332,29 +475,32 @@ function writeWeeklyCapacity(ss, weeklyHours, allWeeks) {
   });
   ws.setRowHeight(8, 18);
 
-  // Data rows starting row 9
+  // Data rows starting row 9 — built as arrays and written in bulk
+  // (per-cell getRange/setValue is far too slow once the BOM is exploded).
   const dataStartRow = 9;
-  allWeeks.forEach((wk, rowIdx) => {
-    const r = dataStartRow + rowIdx;
-    const isAlt = rowIdx % 2 === 0;
-    const rowBg = isAlt ? '#F0F4FF' : COLOR.WHITE;
-
-    ws.getRange(r, 1).setValue(wk).setBackground('#E8EAF6').setFontWeight('bold').setHorizontalAlignment('center');
-
-    DEPTS.forEach((dept, i) => {
-      const hrs = (weeklyHours[wk] && weeklyHours[wk][dept]) ? weeklyHours[wk][dept] : 0;
-      const cell = ws.getRange(r, i + 2);
-      cell.setValue(Math.round(hrs * 10) / 10).setNumberFormat('0.0').setHorizontalAlignment('center');
-
-      // Conditional: red if demand > capacity (compare to row 6)
-      if (hrs === 0) {
-        cell.setBackground(rowBg).setFontColor('#CCCCCC');
-      } else {
-        cell.setBackground(rowBg).setFontColor('#000000');
-      }
+  const W = allWeeks.length;
+  if (W > 0) {
+    const values = [], backgrounds = [], fontColors = [];
+    allWeeks.forEach((wk, rowIdx) => {
+      const rowBg = (rowIdx % 2 === 0) ? '#F0F4FF' : COLOR.WHITE;
+      const vRow = [wk], bRow = ['#E8EAF6'], fRow = ['#000000'];
+      DEPTS.forEach(dept => {
+        const hrs = (weeklyHours[wk] && weeklyHours[wk][dept]) ? weeklyHours[wk][dept] : 0;
+        vRow.push(Math.round(hrs * 10) / 10);
+        bRow.push(rowBg);
+        fRow.push(hrs === 0 ? '#CCCCCC' : '#000000');   // grey out zeros
+      });
+      values.push(vRow); backgrounds.push(bRow); fontColors.push(fRow);
     });
-    ws.setRowHeight(r, 15);
-  });
+    const dataRange = ws.getRange(dataStartRow, 1, W, totalCols);
+    dataRange.setValues(values);
+    dataRange.setBackgrounds(backgrounds);
+    dataRange.setFontColors(fontColors);
+    dataRange.setHorizontalAlignment('center');
+    ws.getRange(dataStartRow, 2, W, numDepts).setNumberFormat('0.0');
+    ws.getRange(dataStartRow, 1, W, 1).setFontWeight('bold');   // week column
+    ws.setRowHeights(dataStartRow, W, 15);
+  }
 
   // Totals row
   const totalRow = dataStartRow + allWeeks.length;
@@ -375,23 +521,30 @@ function writeWeeklyCapacity(ss, weeklyHours, allWeeks) {
   // Freeze
   ws.setFrozenRows(8);
 
-  // Apply conditional formatting: red background if demand > capacity
-  // We do this with a note — Google Sheets conditional formatting via script
-  const dataRange = ws.getRange(dataStartRow, 2, allWeeks.length, numDepts);
-  const rules = [];
-  DEPTS.forEach((dept, i) => {
-    const col = colLetters[i];
-    const capCell = '$' + col + '$6';
-    const range = ws.getRange(dataStartRow, i + 2, allWeeks.length, 1);
-    const rule = SpreadsheetApp.newConditionalFormatRule()
-      .whenFormulaSatisfied('=' + col + dataStartRow + '>' + capCell)
-      .setBackground('#FFCDD2')
-      .setFontColor('#B71C1C')
-      .setRanges([range])
-      .build();
-    rules.push(rule);
-  });
-  ws.setConditionalFormatRules(rules);
+  // Apply conditional formatting: red background if demand > capacity.
+  // Guard the empty case — a 0-row range throws "number of rows must be at least 1".
+  if (allWeeks.length > 0) {
+    const rules = [];
+    DEPTS.forEach((dept, i) => {
+      const col = colLetters[i];
+      const capCell = '$' + col + '$6';
+      const range = ws.getRange(dataStartRow, i + 2, allWeeks.length, 1);
+      const rule = SpreadsheetApp.newConditionalFormatRule()
+        .whenFormulaSatisfied('=' + col + dataStartRow + '>' + capCell)
+        .setBackground('#FFCDD2')
+        .setFontColor('#B71C1C')
+        .setRanges([range])
+        .build();
+      rules.push(rule);
+    });
+    ws.setConditionalFormatRules(rules);
+  } else {
+    ws.setConditionalFormatRules([]);  // clear any stale rules
+    ws.getRange(totalRow + 1, 1, 1, totalCols).merge()
+      .setValue('⚠ No weekly demand computed — verify the P&P tab has rows and that Part Labor Data parts are marked On P&P? = TRUE with DPNs matching the P&P tab.')
+      .setBackground(COLOR.AMBER).setFontColor('#8A6D00').setFontStyle('italic')
+      .setHorizontalAlignment('center');
+  }
 }
 
 // ── WRITE LAM SCHEDULE SHEET ──────────────────────────────────────
@@ -403,10 +556,10 @@ function writeLamSchedule(ss, lamSchedule) {
   ws.clearContents();
   ws.clearFormats();
 
-  const headers = ['Part Number','Description','Due Date','Open QTY',
-                   'Cycles/Day','Tool UP','Parts/Wk','LAM Wks Needed',
+  const headers = ['Part Number','Description','Due Date','Open QTY','Outsrc Days',
+                   'Cycles/Day','Parts/Cycle','Parts/Wk','LAM Wks Needed',
                    'LAM Start','LAM Deadline','Finish Ops Wk','Status'];
-  const colWidths = [110,280,100,80,80,70,80,110,100,110,110,180];
+  const colWidths = [110,280,100,80,80,80,80,80,110,100,110,110,180];
 
   // Title
   ws.getRange(1, 1, 1, headers.length).merge()
@@ -416,7 +569,7 @@ function writeLamSchedule(ss, lamSchedule) {
   ws.setRowHeight(1, 30);
 
   ws.getRange(2, 1, 1, headers.length).merge()
-    .setValue('🔴 RED = LAM start date is in the past — already behind schedule  |  🔵 CYAN = missing labor data  |  Sorted by Due Date')
+    .setValue('One row per manufactured part (BOM-exploded from the P&P)  |  🔴 RED = LAM start date is in the past  |  🔵 CYAN = P&P item missing labor data  |  Sorted by Due Date')
     .setBackground('#FFF3CD').setFontColor('#555555').setFontStyle('italic').setFontSize(9)
     .setHorizontalAlignment('left');
   ws.setRowHeight(2, 16);
@@ -434,35 +587,42 @@ function writeLamSchedule(ss, lamSchedule) {
   const sorted = lamSchedule.slice().sort((a, b) => a.dueDate.localeCompare(b.dueDate));
   const today = new Date().toISOString().slice(0,10);
 
-  sorted.forEach((row, idx) => {
-    const r = idx + 4;
-    const isAlt = idx % 2 === 0;
-    const rowBg = isAlt ? '#F5F5F5' : COLOR.WHITE;
-
-    let status, statusBg, statusFg, rowHighlight;
-    if (!row.hasLaborData) {
-      status = '⚠ NO LABOR DATA'; statusBg = COLOR.CYAN; statusFg = '#003355'; rowHighlight = COLOR.CYAN;
-    } else if (row.lamStart < today && row.lamStart !== '?') {
-      status = '🔴 LAM START IN PAST'; statusBg = COLOR.RED; statusFg = COLOR.WHITE; rowHighlight = '#FFEBEE';
-    } else {
-      status = '✅ On track'; statusBg = '#00B050'; statusFg = COLOR.WHITE; rowHighlight = rowBg;
-    }
-
-    const vals = [
-      row.pn, row.desc, row.dueDate, row.qty,
-      row.cyclesPerDay, row.upCount, row.partsPerWeek, row.lamWeeksNeeded,
-      row.lamStart, row.lamDeadline, row.finishWeek, status
-    ];
-
-    vals.forEach((v, i) => {
-      const cell = ws.getRange(r, i + 1);
-      cell.setValue(v).setBackground(rowHighlight).setFontSize(9);
-      if (i === 0) cell.setFontWeight('bold');
-      if (i === 11) { cell.setBackground(statusBg).setFontColor(statusFg).setFontWeight('bold'); }
-      cell.setHorizontalAlignment(i <= 1 ? 'left' : 'center');
+  const nCols = headers.length;
+  if (sorted.length > 0) {
+    const values = [], backgrounds = [], fontColors = [];
+    sorted.forEach((row, idx) => {
+      const rowBg = (idx % 2 === 0) ? '#F5F5F5' : COLOR.WHITE;
+      let status, statusBg, statusFg, rowHighlight;
+      if (!row.hasLaborData) {
+        status = '⚠ NO LABOR DATA'; statusBg = COLOR.CYAN; statusFg = '#003355'; rowHighlight = COLOR.CYAN;
+      } else if (row.lamStart < today && row.lamStart !== '?') {
+        status = '🔴 LAM START IN PAST'; statusBg = COLOR.RED; statusFg = COLOR.WHITE; rowHighlight = '#FFEBEE';
+      } else {
+        status = '✅ On track'; statusBg = '#00B050'; statusFg = COLOR.WHITE; rowHighlight = rowBg;
+      }
+      values.push([
+        row.pn, row.desc, row.dueDate, row.qty, row.outsourceDays,
+        row.cyclesPerDay, row.upCount, row.partsPerWeek, row.lamWeeksNeeded,
+        row.lamStart, row.lamDeadline, row.finishWeek, status
+      ]);
+      const bRow = [], fRow = [];
+      for (let i = 0; i < nCols; i++) {
+        bRow.push(i === nCols - 1 ? statusBg : rowHighlight);
+        fRow.push(i === nCols - 1 ? statusFg : '#000000');
+      }
+      backgrounds.push(bRow); fontColors.push(fRow);
     });
-    ws.setRowHeight(r, 15);
-  });
+    const dataRange = ws.getRange(4, 1, sorted.length, nCols);
+    dataRange.setValues(values);
+    dataRange.setBackgrounds(backgrounds);
+    dataRange.setFontColors(fontColors);
+    dataRange.setFontSize(9);
+    dataRange.setHorizontalAlignment('center');
+    ws.getRange(4, 1, sorted.length, 2).setHorizontalAlignment('left');   // Part Number + Description
+    ws.getRange(4, 1, sorted.length, 1).setFontWeight('bold');            // Part Number
+    ws.getRange(4, nCols, sorted.length, 1).setFontWeight('bold');        // Status
+    ws.setRowHeights(4, sorted.length, 15);
+  }
 
   ws.setFrozenRows(3);
 
@@ -471,123 +631,10 @@ function writeLamSchedule(ss, lamSchedule) {
   ws.getRange(3, 1, 1, headers.length).createFilter();
 }
 
-// ── UPDATE DEMAND STATUS ──────────────────────────────────────────
-
-function updateDemandStatus(ss, laborMap) {
-  const ws = ss.getSheetByName('📦 Demand Detail');
-  if (!ws) return;
-  const data = ws.getDataRange().getValues();
-  // Find header row
-  let hdrRow = -1;
-  for (let i = 0; i < data.length; i++) {
-    if (String(data[i][0]).trim() === 'Part Number') { hdrRow = i; break; }
-  }
-  if (hdrRow < 0) return;
-  const pnCol = 0, statusCol = data[hdrRow].findIndex(h => String(h).trim() === 'Status');
-  if (statusCol < 0) return;
-  for (let i = hdrRow + 1; i < data.length; i++) {
-    const pn = String(data[i][pnCol]).trim();
-    if (!pn) continue;
-    const hasLab = !!laborMap[pn];
-    ws.getRange(i + 1, statusCol + 1)
-      .setValue(hasLab ? '✅ Has Labor Data' : '⚠ MISSING LABOR DATA')
-      .setBackground(hasLab ? '#00B050' : '#00CCFF')
-      .setFontColor(hasLab ? COLOR.WHITE : '#003355')
-      .setFontWeight('bold');
-  }
-}
-
-// ── BUILD LABOR DATA SHEET ────────────────────────────────────────
-
-function buildLaborDataSheet(ss) {
-  let ws = ss.getSheetByName('📋 Part Labor Data');
-  if (ws) ws.clear();
-  else ws = ss.insertSheet('📋 Part Labor Data');
-
-  const headers = ['Part Number','CUSTOMER','Cycles/Day','Tool UP Count',
-                   'PLANNING (PER JOB)','Kitting (PER JOB)','PLOTTER',
-                   'LAM','DEPART','CNC TRIM','HAND-TRIM',
-                   'QA 1','ASY 1','QA 2','ASY 2','QA 3 (auto inspect)',
-                   'PAINT','QA (Final)','SHIP'];
-  const colWidths = [110,90,90,100,130,120,80,70,70,90,100,70,70,70,70,130,70,90,70];
-
-  // Title
-  ws.getRange(1, 1, 1, headers.length).merge()
-    .setValue('PART LABOR HOURS — Edit this sheet directly, then click 🔄 Refresh Capacity')
-    .setBackground(COLOR.DARK_BLUE).setFontColor(COLOR.WHITE)
-    .setFontWeight('bold').setFontSize(13).setHorizontalAlignment('center');
-  ws.setRowHeight(1, 30);
-
-  ws.getRange(2, 1, 1, headers.length).merge()
-    .setValue('🔵 CYAN = needs data  |  All hour columns = hours per unit  |  PLANNING/KITTING = per job (not × qty)')
-    .setBackground('#FFFDE7').setFontColor('#333333').setFontStyle('italic').setFontSize(9)
-    .setHorizontalAlignment('center');
-  ws.setRowHeight(2, 16);
-
-  // Headers row 3
-  headers.forEach((h, i) => {
-    ws.getRange(3, i + 1).setValue(h)
-      .setBackground(COLOR.GRAY_HDR).setFontColor(COLOR.WHITE)
-      .setFontWeight('bold').setFontSize(9).setHorizontalAlignment('center');
-    ws.setColumnWidth(i + 1, colWidths[i]);
-  });
-  ws.setRowHeight(3, 36);
-
-  // Seed data
-  const allPns = new Set(DEMAND_DATA.map(r => r.pn));
-  const laborPns = new Set(LABOR_DATA_SEED.map(r => r.pn));
-
-  // Write existing labor rows
-  let rowNum = 4;
-  LABOR_DATA_SEED.forEach(lab => {
-    const isAlt = rowNum % 2 === 0;
-    const bg = isAlt ? '#F9F9F9' : COLOR.WHITE;
-    const hasData = lab.lam > 0 || lab.depart > 0 || lab.qa1 > 0;
-
-    const vals = [
-      lab.pn, lab.customer, lab.cyclesPerDay, lab.upCount,
-      lab.planning, lab.kitting, lab.plotter,
-      lab.lam, lab.depart, lab.cncTrim, lab.handTrim,
-      lab.qa1, lab.asy1, lab.qa2, lab.asy2, lab.qa3,
-      lab.paint, lab.qaFinal, lab.ship
-    ];
-
-    vals.forEach((v, i) => {
-      const cell = ws.getRange(rowNum, i + 1);
-      const isEmpty = (v === 0 && i > 3) || v === '' || v === null;
-      if (i === 0) {
-        cell.setValue(v).setBackground(hasData ? '#00B050' : COLOR.RED)
-          .setFontColor(COLOR.WHITE).setFontWeight('bold');
-      } else if (!hasData || isEmpty) {
-        cell.setValue(v === 0 && i > 3 ? '' : v).setBackground(COLOR.CYAN);
-      } else {
-        cell.setValue(v).setBackground(bg);
-        if (typeof v === 'number' && v > 0 && i > 3) cell.setNumberFormat('0.000');
-      }
-      cell.setHorizontalAlignment(i <= 1 ? 'left' : 'center').setFontSize(9);
-    });
-    ws.setRowHeight(rowNum, 15);
-    rowNum++;
-  });
-
-  // Blank cyan rows for PNs on demand but not in labor sheet
-  [...allPns].filter(pn => !laborPns.has(pn)).sort().forEach(pn => {
-    const desc = (DEMAND_DATA.find(r => r.pn === pn) || {}).desc || '';
-    ws.getRange(rowNum, 1).setValue(pn).setBackground(COLOR.CYAN).setFontWeight('bold').setFontColor('#003355');
-    ws.getRange(rowNum, 2).setValue(desc).setBackground(COLOR.CYAN).setFontColor('#003355');
-    ws.getRange(rowNum, 3, 1, headers.length - 2).setBackground(COLOR.CYAN);
-    ws.setRowHeight(rowNum, 15);
-    rowNum++;
-  });
-
-  ws.setFrozenRows(3);
-  removeExistingFilter(ws);
-  ws.getRange(3, 1, 1, headers.length).createFilter();
-}
-
 // ── BUILD DEMAND SHEET ────────────────────────────────────────────
 
-function buildDemandSheet(ss) {
+function buildDemandSheet(ss, demand, laborMap) {
+  laborMap = laborMap || {};
   let ws = ss.getSheetByName('📦 Demand Detail');
   if (ws) ws.clear();
   else ws = ss.insertSheet('📦 Demand Detail');
@@ -602,7 +649,7 @@ function buildDemandSheet(ss) {
   ws.setRowHeight(1, 28);
 
   ws.getRange(2, 1, 1, headers.length).merge()
-    .setValue('Excluded: D50002/D50003/D50018/D50019/D50022/D50014/D50017 | Tooling/Fixture descriptions | Status updates on Refresh')
+    .setValue('Live from the current "P&P MM.DD" tab (DPN col F, Desc col G, Open Qty col H, Due Date col J). Rebuilt on every 🔄 Refresh.')
     .setBackground('#FFF3CD').setFontColor('#555555').setFontStyle('italic').setFontSize(9).setHorizontalAlignment('left');
   ws.setRowHeight(2, 14);
 
@@ -614,18 +661,27 @@ function buildDemandSheet(ss) {
   });
   ws.setRowHeight(3, 28);
 
-  const sorted = DEMAND_DATA.slice().sort((a,b) => a.dueDate.localeCompare(b.dueDate));
-  sorted.forEach((row, idx) => {
-    const r = idx + 4;
-    const isAlt = idx % 2 === 0;
-    const bg = isAlt ? '#F5F5F5' : COLOR.WHITE;
-    ws.getRange(r, 1).setValue(row.pn).setBackground(bg).setFontWeight('bold');
-    ws.getRange(r, 2).setValue(row.desc).setBackground(bg);
-    ws.getRange(r, 3).setValue(row.dueDate).setBackground(bg).setHorizontalAlignment('center');
-    ws.getRange(r, 4).setValue(row.qty).setBackground(bg).setHorizontalAlignment('center');
-    ws.getRange(r, 5).setValue('⏳ Run Refresh').setBackground('#E0E0E0').setHorizontalAlignment('center');
-    ws.setRowHeight(r, 14);
-  });
+  const sorted = demand.slice().sort((a,b) => a.dueDate.localeCompare(b.dueDate));
+  if (sorted.length > 0) {
+    const values = [], backgrounds = [], fontColors = [];
+    sorted.forEach((row, idx) => {
+      const bg = (idx % 2 === 0) ? '#F5F5F5' : COLOR.WHITE;
+      const hasLab = !!laborMap[row.pn];
+      values.push([row.pn, row.desc, row.dueDate, row.qty,
+                   hasLab ? '✅ Has Labor Data' : '⚠ MISSING LABOR DATA']);
+      backgrounds.push([bg, bg, bg, bg, hasLab ? '#00B050' : '#00CCFF']);
+      fontColors.push(['#000000','#000000','#000000','#000000', hasLab ? COLOR.WHITE : '#003355']);
+    });
+    const n = sorted.length;
+    const dataRange = ws.getRange(4, 1, n, headers.length);
+    dataRange.setValues(values);
+    dataRange.setBackgrounds(backgrounds);
+    dataRange.setFontColors(fontColors);
+    ws.getRange(4, 3, n, 3).setHorizontalAlignment('center');   // Due / Qty / Status
+    ws.getRange(4, 1, n, 1).setFontWeight('bold');              // Part Number
+    ws.getRange(4, 5, n, 1).setFontWeight('bold');              // Status
+    ws.setRowHeights(4, n, 14);
+  }
 
   ws.setFrozenRows(3);
   removeExistingFilter(ws);
@@ -659,7 +715,7 @@ function buildChartsSheet(ss) {
     ['', '', '', '', '', ''],
     ['DEPT ORDER IN WEEKLY CAPACITY SHEET:', '', '', '', '', ''],
     ['Col B: LAM  |  Col C: DEPART  |  Col D: CNC TRIM  |  Col E: HAND-TRIM  |  Col F: PLOTTER', '', '', '', '', ''],
-    ['Col G: QA   |  Col H: ASY     |  Col I: PAINT     |  Col J: SHIP       |  Col K: PLANNING  |  Col L: KITTING', '', '', '', '', ''],
+    ['Col G: QA   |  Col H: KITTING |  Col I: ASY       |  Col J: PAINT      |  Col K: SHIP', '', '', '', '', ''],
   ];
 
   instructions.forEach((row, idx) => {
@@ -675,10 +731,69 @@ function buildChartsSheet(ss) {
   ws.setColumnWidth(1, 700);
 }
 
-// ── RESEED LABOR DATA ─────────────────────────────────────────────
+// ── CUSTOM FUNCTIONS: ON P&P? ─────────────────────────────────────
+// Populates the "On P&P?" column. Put this in each row of column A of the
+// Part Labor Data sheet, e.g. in A9 (first data row):
+//   =IS_ON_PP_OR_ANCESTOR(B9, PP_LIST(TODAY()), 'Parent to Child'!A2:C)
+// then fill down. readLaborData() only counts parts whose On P&P? = TRUE.
+// PP_LIST(TODAY()) auto-locates the current P&P tab, so the daily rename of
+// that tab never breaks these formulas.
 
-function reseedLaborData(ss) {
-  if (typeof ss === 'undefined') ss = SpreadsheetApp.getActiveSpreadsheet();
-  buildLaborDataSheet(ss);
-  SpreadsheetApp.getActiveSpreadsheet().toast('Labor data reseeded from source.', 'Done', 3);
+/**
+ * Column F (DPNs, row 2 down) of the CURRENT "P&P MM.DD" tab — resolved by
+ * resolvePPSheet() (most recent dated tab), so the daily rename never breaks
+ * the formula. Pass TODAY() as refreshToken so the value recomputes daily
+ * (custom functions cache until an argument changes).
+ * @param {number} refreshToken  Pass TODAY() to force a daily refresh.
+ * @return {Array} Column F values as a 2-D array, for use as ppRange.
+ * @customfunction
+ */
+function PP_LIST(refreshToken) {
+  const pp = resolvePPSheet(SpreadsheetApp.getActiveSpreadsheet());
+  if (!pp) throw new Error('No "P&P MM.DD" tab was found.');
+  const last = pp.getLastRow();
+  if (last < PP_FIRST_ROW) return [['']];
+  return pp.getRange(PP_FIRST_ROW, PP_DPN_COL, last - PP_FIRST_ROW + 1, 1).getValues();
+}
+
+/**
+ * TRUE if a DPN — or any ancestor (parent, grandparent, …) — is on the
+ * Pick & Pack list.
+ * @param {string} dpn               Part number to check (e.g. D50567)
+ * @param {Array}  ppRange           P&P list column, e.g. PP_LIST(TODAY())
+ * @param {Array}  parentChildRange  Parent→Child table, e.g. 'Parent to Child'!A2:C (A=parent, B=child)
+ * @return {boolean}
+ * @customfunction
+ */
+function IS_ON_PP_OR_ANCESTOR(dpn, ppRange, parentChildRange) {
+  var key = function(v) { return (v === null || v === undefined) ? '' : String(v).trim(); };
+  var start = key(dpn);
+  if (!start) return false;
+
+  // A single-cell argument arrives as a scalar, not a 2-D array — normalize it.
+  if (!Array.isArray(ppRange)) ppRange = [[ppRange]];
+  if (!Array.isArray(parentChildRange)) parentChildRange = [[parentChildRange]];
+
+  var ppSet = {};
+  ppRange.forEach(function(row) { var k = key(row[0]); if (k) ppSet[k] = true; });
+
+  var childToParents = {};
+  parentChildRange.forEach(function(row) {
+    var parent = key(row[0]), child = key(row[1]);
+    if (!parent || !child) return;
+    (childToParents[child] = childToParents[child] || []).push(parent);
+  });
+
+  var visited = {};
+  function checkAncestors(pn) {
+    if (ppSet[pn]) return true;
+    if (visited[pn]) return false; // guards against circular BOM data
+    visited[pn] = true;
+    var parents = childToParents[pn] || [];
+    for (var i = 0; i < parents.length; i++) {
+      if (checkAncestors(parents[i])) return true;
+    }
+    return false;
+  }
+  return checkAncestors(start);
 }
