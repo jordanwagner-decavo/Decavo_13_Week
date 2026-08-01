@@ -22,6 +22,7 @@
  *    A: SO | B: Part No. | C: Description | D: Unit Price
  *    E: Moved Qty | F: Moved Value | G: Original Date | H: New Date
  *    I: Weeks Moved | J: Change Type | K: Notes | L: Date Time | M: User
+ *    N: Edited Cell (clickable link to the changed cell on "13 Week Release")
  *
  *  CONTACT / OWNER:  Jordan Wagner
  *  LAST UPDATED:     2026-06-16
@@ -54,10 +55,11 @@ const LC = {
   CHANGE_TYPE: 10,
   NOTES:       11,
   DATETIME:    12,
-  USER:        13
+  USER:        13,
+  EDITED_CELL: 14
 };
 
-const LOG_COLS = 13;
+const LOG_COLS = 14;
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 
 /**
@@ -199,7 +201,8 @@ function onEditInstallable(e) {
         changeType,
         '',         // Notes
         lastTime,   // keep original timestamp
-        user
+        user,
+        cellLink_(sheet.getSheetId(), range.getA1Notation(), range.getA1Notation())
       ]]);
 
       return;
@@ -225,7 +228,8 @@ function onEditInstallable(e) {
     origDate, newDate, '',   // Weeks Moved blank until paired
     changeType,
     '',   // Notes
-    now, user
+    now, user,
+    cellLink_(sheet.getSheetId(), range.getA1Notation(), range.getA1Notation())
   ]);
 }
 
@@ -259,4 +263,15 @@ function columnToLetter_(col) {
     col = Math.floor((col - 1) / 26);
   }
   return letter;
+}
+
+/**
+ * Builds a clickable in-spreadsheet link to a cell (or cells) on the source
+ * sheet, for the Change Log's "Edited Cell" column. `gid` is the source sheet's
+ * getSheetId(); `targetA1` is the single cell the link jumps to; `label` is the
+ * text shown (may list several cells). Stored as a HYPERLINK formula string.
+ */
+function cellLink_(gid, targetA1, label) {
+  if (!targetA1) return '';
+  return '=HYPERLINK("#gid=' + gid + '&range=' + targetA1 + '", "' + (label || targetA1) + '")';
 }
